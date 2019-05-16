@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "diary"
+version = "0.1.0"
+description = "A journal/diary to record things that have happened."
+authors = ["Chris Withers <chris@withers.org>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+fastapi = {version = "^0",extras = ["all"]}
+sqlalchemy = "^1.3"
+psycopg2 = "^2.8"
+sqlalchemy_utils = "^0.33.11"
+mortar_mixins = "^2.3"
+mortar_rdb = "^3.0"
+configurator = "^1.0"
+pyyaml = "^5.1"
+alembic = "^1.0"
+
+[tool.poetry.dev-dependencies]
+pytest = "^4.5"
+testfixtures = "^6.8"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
+
