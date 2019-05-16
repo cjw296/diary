@@ -2,8 +2,11 @@ from enum import Enum
 from sqlalchemy import Column, Integer, Text, Date
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 Base = declarative_base()
+
+Session = sessionmaker()
 
 
 class Types(Enum):
