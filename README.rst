@@ -1,7 +1,7 @@
 Chris's Diary
 =============
 
-Well, it's more or a journal really...
+Well, it's more of a journal really...
 
 Setup
 -----
@@ -24,4 +24,5 @@ Now:
 
 .. code-block:: bash
 
+  alembic upgrade head
   uvicorn diary:app --reload --port 9000
