@@ -25,4 +25,4 @@ Now:
 .. code-block:: bash
 
   alembic upgrade head
-  uvicorn diary.api:app --reload --port 9000
+  uvicorn diary.api:app --reload --port 9000 --lifespan on
