@@ -26,16 +26,16 @@ def db():
                 o[key] = lambda request: session
 
     engine = create_engine(os.environ['TEST_DB_URL'])
-    with engine.begin():
-        session = Session(bind=engine)
-        try:
-            Base.metadata.create_all(bind=engine)
+    conn = engine.connect()
+    transaction = conn.begin()
+    try:
+        session = Session(bind=conn)
+        Base.metadata.create_all(bind=conn, checkfirst=False)
 
 
-            yield session
-        finally:
-            session.rollback()
-            session.close()
+        yield session
+    finally:
+        transaction.rollback()
 
 
 @pytest.fixture()
