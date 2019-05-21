@@ -22,11 +22,19 @@ async def db_session_middleware(request: Request, call_next):
     request.state.db.close()
     return response
 
+class SessionGetter:
 
-def get_db(request: Request):
-    return request.state.db
+    session = None
+
+    def __call__(self, request: Request):
+        if self.session is None:
+            return request.state.db
+        else:
+            return self.session
+
+get_session = SessionGetter()
 
 
 @app.get("/")
-def root(session: Session = Depends(get_db)):
+def root(session: Session = Depends(get_session)):
     return {"count": session.query(Event).count()}
