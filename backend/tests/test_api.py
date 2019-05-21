@@ -12,19 +12,6 @@ from diary.api import app, db_session_middleware
 client = TestClient(app)
 
 
-@pytest.fixture(scope='session', autouse=True)
-def db():
-    engine = create_engine(os.environ['TEST_DB_URL'])
-    conn = engine.connect()
-    transaction = conn.begin()
-    try:
-        session = Session(bind=conn)
-        Base.metadata.create_all(bind=conn, checkfirst=False)
-        yield session
-    finally:
-        transaction.rollback()
-
-
 @contextmanager
 def replace_middleware_dispatch(app, existing, replacement):
     app = app.error_middleware
@@ -38,18 +25,31 @@ def replace_middleware_dispatch(app, existing, replacement):
     # This should put things back like they were ;-)
 
 
-@pytest.fixture()
-def session(db):
-    transaction = db.begin_nested()
+@pytest.fixture(scope='session', autouse=True)
+def db():
+    engine = create_engine(os.environ['TEST_DB_URL'])
+    conn = engine.connect()
+    transaction = conn.begin()
     try:
+        session = Session(bind=conn)
+        Base.metadata.create_all(bind=conn, checkfirst=False)
 
         async def testing_session(request: Request, call_next):
-            request.state.db = db
+            request.state.db = session
             return await call_next(request)
 
         with replace_middleware_dispatch(
             app, db_session_middleware, testing_session
         ):
+            yield session
+    finally:
+        transaction.rollback()
+
+
+@pytest.fixture()
+def session(db):
+    transaction = db.begin_nested()
+    try:
             yield db
     finally:
         transaction.rollback()
