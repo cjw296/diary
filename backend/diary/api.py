@@ -22,17 +22,9 @@ async def db_session_middleware(request: Request, call_next):
     request.state.db.close()
     return response
 
-class SessionGetter:
 
-    session = None
-
-    def __call__(self, request: Request):
-        if self.session is None:
-            return request.state.db
-        else:
-            return self.session
-
-get_session = SessionGetter()
+def get_session(request: Request):
+    return request.state.db
 
 
 @app.get("/")

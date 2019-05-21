@@ -1,10 +1,13 @@
 import os
+from contextlib import contextmanager
 
 import pytest
 from diary.model import Session, Base, Event, Done
 from sqlalchemy import create_engine
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 from starlette.testclient import TestClient
-from diary.api import app, get_session
+from diary.api import app, db_session_middleware
 
 client = TestClient(app)
 
@@ -22,14 +25,33 @@ def db():
         transaction.rollback()
 
 
+@contextmanager
+def replace_middleware_dispatch(app, existing, replacement):
+    app = app.error_middleware
+    while True:
+        app = getattr(app, 'app', None)
+        if app is None:
+            break
+        if isinstance(app, BaseHTTPMiddleware) and app.dispatch_func is existing:
+            app.dispatch_func = replacement
+    yield
+    # This should put things back like they were ;-)
+
+
 @pytest.fixture()
 def session(db):
     transaction = db.begin_nested()
     try:
-        get_session.session = db
-        yield db
+
+        async def testing_session(request: Request, call_next):
+            request.state.db = db
+            return await call_next(request)
+
+        with replace_middleware_dispatch(
+            app, db_session_middleware, testing_session
+        ):
+            yield db
     finally:
-        get_session.session = None
         transaction.rollback()
 
 
