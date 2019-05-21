@@ -1,4 +1,5 @@
 import os
+import sys
 
 import pytest
 from diary.model import Session, Base, Event, Done
@@ -13,19 +14,23 @@ client = TestClient(app)
 @pytest.fixture(scope='session', autouse=True)
 def db():
 
+    # hack to see if this works:
+    import gc
+    ignore = sys._getframe().f_globals
+    for o in gc.get_referrers(get_db):
+        assert isinstance(o, dict)
+        if o is ignore:
+            continue
+        for key, value in tuple(o.items()):
+            if value is get_db:
+                o[key] = lambda request: session
+
     engine = create_engine(os.environ['TEST_DB_URL'])
     with engine.begin():
         session = Session(bind=engine)
         try:
             Base.metadata.create_all(bind=engine)
 
-            # hack to see if this works:
-            import gc
-            for o in gc.get_referrers(get_db):
-                assert isinstance(o, dict)
-                for key, value in o.items():
-                    if value is get_db:
-                        o[key] = lambda request: session
 
             yield session
         finally:
