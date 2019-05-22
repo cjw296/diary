@@ -15,8 +15,7 @@ def configure():
     Session.configure(bind=create_engine(config.db.url))
 
 
-@app.middleware("http")
-async def db_session_middleware(request: Request, call_next):
+async def make_session(request: Request, call_next):
     request.state.db = Session()
     response = await call_next(request)
     request.state.db.close()
