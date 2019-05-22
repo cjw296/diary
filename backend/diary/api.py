@@ -13,6 +13,8 @@ app = FastAPI()
 def configure():
     config = load_config()
     Session.configure(bind=create_engine(config.db.url))
+    for middleware in config.middleware:
+        app.middleware('http')(middleware)
 
 
 async def make_session(request: Request, call_next):
