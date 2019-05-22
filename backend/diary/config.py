@@ -7,7 +7,7 @@ from pydantic import BaseModel, PyObject, urlstr
 
 
 class DatabaseConfig(BaseModel):
-    url: urlstr(schemes={'postgresql'}) = ...
+    url: urlstr(schemes={'postgresql'}, require_tld=False) = ...
 
 
 class AppConfig(BaseModel):
@@ -15,15 +15,17 @@ class AppConfig(BaseModel):
     middleware: List[PyObject] = []
 
 
-def load_config():
+def load_config(path=None):
     # defaults
     config = Config({
         'middleware': ['diary.api.make_db_session'],
     })
 
     # file
+    if path is None:
+        path = Path(__file__).resolve().parent.parent / 'app.yml'
     config.merge(
-        Config.from_path(Path(__file__).resolve().parent.parent / 'app.yml')
+        Config.from_path(path)
     )
 
     # env

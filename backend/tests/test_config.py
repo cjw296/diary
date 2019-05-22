@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import pytest
 from configurator import Config
-from diary.config import load_config
+from diary.config import load_config, AppConfig
 from pydantic import ValidationError
 from testfixtures import TempDirectory, compare, ShouldRaise
 
@@ -12,7 +12,10 @@ db:
   url: postgresql://foo:bar@baz/bob
 """
 
-valid_config_obj = Config({'db': {'url': 'postgresql://foo:bar@baz/bob'}})
+valid_config_obj = AppConfig(
+    db={'url': 'postgresql://foo:bar@baz/bob'},
+    middleware=['diary.api.make_db_session'],
+)
 
 
 @pytest.fixture()
@@ -23,7 +26,7 @@ def tmpdir():
 
 @patch('diary.config.Path')
 def test_default_location(mock_path, tmpdir):
-    __file__ = tmpdir.write('backend/diary/config.py', '')
+    __file__ = tmpdir.write('backend/diary/config.py', valid_config_source)
     tmpdir.write('backend/app.yml', valid_config_source)
     mock_path.return_value = Path(__file__)
     config = load_config()
