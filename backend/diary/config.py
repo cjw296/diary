@@ -3,11 +3,11 @@ from pathlib import Path
 from typing import List
 
 from configurator import Config
-from pydantic import BaseModel, PyObject, urlstr
+from pydantic import BaseModel, PyObject, DSN
 
 
 class DatabaseConfig(BaseModel):
-    url: urlstr(schemes={'postgresql'}, require_tld=False) = ...
+    url: DSN = ...
 
 
 class AppConfig(BaseModel):
