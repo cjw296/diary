@@ -17,17 +17,17 @@ def configure():
         app.middleware('http')(middleware)
 
 
-async def make_session(request: Request, call_next):
+async def make_db_session(request: Request, call_next):
     request.state.db = Session()
     response = await call_next(request)
     request.state.db.close()
     return response
 
 
-def get_session(request: Request):
+def db_session(request: Request):
     return request.state.db
 
 
 @app.get("/")
-def root(session: Session = Depends(get_session)):
+def root(session: Session = Depends(db_session)):
     return {"count": session.query(Event).count()}
