@@ -2,7 +2,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-from configurator import Config
 from diary.config import load_config, AppConfig
 from pydantic import ValidationError
 from testfixtures import TempDirectory, compare, ShouldRaise
