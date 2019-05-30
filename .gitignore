@@ -1,2 +1,3 @@
 *.egg-info
 backend/app.yml
+.coverage
