@@ -2,21 +2,24 @@ import os
 
 import pytest
 from diary.api import app
+from diary.config import config
 from diary.model import Session, Base, Event, Done
-from sqlalchemy import create_engine
 from starlette.testclient import TestClient
 
 
 @pytest.fixture(scope='session')
 def client():
-    os.environ['DB_URL'] = os.environ['TEST_DB_URL']
-    with TestClient(app) as client:
-        yield client
+    with config.push({
+        'testing': True,
+        'db': {'url': os.environ['TEST_DB_URL']}
+    }):
+        with TestClient(app) as client:
+            yield client
 
 
 @pytest.fixture(scope='session')
 def db(client):
-    engine = create_engine(os.environ['TEST_DB_URL'])
+    engine = Session.kw['bind']
     conn = engine.connect()
     transaction = conn.begin()
     try:
@@ -26,6 +29,7 @@ def db(client):
         yield session
     finally:
         transaction.rollback()
+        Session.configure(bind=engine)
 
 
 @pytest.fixture()

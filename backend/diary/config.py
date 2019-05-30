@@ -1,25 +1,29 @@
 import os
 from pathlib import Path
-from typing import List
 
 from configurator import Config
-from pydantic import BaseModel, PyObject, DSN
+from pydantic import BaseModel, DSN
 
 
+# schema
 class DatabaseConfig(BaseModel):
     url: DSN = ...
 
 
 class AppConfig(BaseModel):
+    testing: bool = ...
     db: DatabaseConfig = ...
-    middleware: List[PyObject] = []
+
+
+# defaults
+config = Config({
+    'testing': False,
+})
 
 
 def load_config(path=None):
-    # defaults
-    config = Config({
-        'middleware': ['diary.api.make_db_session'],
-    })
+    if config.testing:
+        return
 
     # file
     if path is None:
@@ -33,4 +37,7 @@ def load_config(path=None):
         'DB_URL': 'db.url',
     })
 
-    return AppConfig(**config.data)
+    # validate
+    AppConfig(**config.data)
+
+
