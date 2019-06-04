@@ -23,22 +23,26 @@ def db(client):
     conn = engine.connect()
     transaction = conn.begin()
     try:
-        Session.configure(bind=conn)
-        session = Session()
         Base.metadata.create_all(bind=conn, checkfirst=False)
-        yield session
+        yield conn
     finally:
         transaction.rollback()
         Session.configure(bind=engine)
 
 
 @pytest.fixture()
-def session(db):
+def transaction(db):
     transaction = db.begin_nested()
     try:
-        yield db
+        Session.configure(bind=db)
+        yield transaction
     finally:
         transaction.rollback()
+
+
+@pytest.fixture()
+def session(transaction):
+    return Session()
 
 
 def test_root_empty(session, client):
