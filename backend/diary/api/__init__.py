@@ -18,11 +18,10 @@ def configure():
 
 
 @app.middleware('http')
-def make_db_session(request: Request, call_next):
+async def make_db_session(request: Request, call_next):
     request.state.db = session = Session()
-    with session.transaction:
-        response = call_next(request)
-    session.close()
+    response = await call_next(request)
+    await run_in_threadpool(session.close)
     return response
 
 
