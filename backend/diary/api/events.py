@@ -28,11 +28,9 @@ def create_object(
     """
     Create new Event.
     """
-    with session.transaction:
-        event = Event(**event.dict())
-        session.add(event)
-        session.flush()
-        session.expunge(event)
+    event = Event(**event.dict())
+    session.add(event)
+    session.flush()
     return event
 
 
