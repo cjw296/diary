@@ -33,18 +33,13 @@ def db(client):
 
 
 @pytest.fixture()
-def transaction(db):
+def session(db):
     transaction = db.begin_nested()
     try:
         Session.configure(bind=db)
-        yield transaction
+        yield Session()
     finally:
         transaction.rollback()
-
-
-@pytest.fixture()
-def session(transaction):
-    return Session()
 
 
 def test_root_empty(session, client):
