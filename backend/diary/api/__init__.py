@@ -4,7 +4,7 @@ from starlette.requests import Request
 from starlette.concurrency import run_in_threadpool
 
 from ..config import config, load_config
-from .db import db_session
+from .db import db_session, finish_session
 from ..model import Session, Event
 from . import events
 
@@ -21,7 +21,7 @@ def configure():
 async def make_db_session(request: Request, call_next):
     request.state.db = session = Session()
     response = await call_next(request)
-    await run_in_threadpool(session.close)
+    await run_in_threadpool(finish_session, session)
     return response
 
 
