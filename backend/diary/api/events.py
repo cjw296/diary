@@ -4,7 +4,7 @@ from typing import List
 from .db import db_session
 from diary.model import Session, Types, Event
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Required
 
 router = APIRouter()
 
@@ -21,9 +21,8 @@ class EventRead(EventCreate):
 
 @router.post("/", response_model=EventRead, status_code=201)
 def create_object(
-    *,
     session: Session = Depends(db_session),
-    event: EventCreate,
+    event: EventCreate = Required,
 ):
     """
     Create new Event.
