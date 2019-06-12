@@ -21,9 +21,9 @@ class Event(Base):
     __tablename__ = 'entry'
 
     id = Column(Integer(), primary_key=True)
-    date = Column(Date)
-    type = Column(ENUM(Types, name='types_enum'))
-    text = Column(Text)
+    date = Column(Date, nullable=False)
+    type = Column(ENUM(Types, name='types_enum'), nullable=False)
+    text = Column(Text, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_identity': Types.event,
