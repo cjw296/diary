@@ -39,5 +39,6 @@ def load_config(path=None):
 
     # validate
     AppConfig(**config.data)
+    return config
 
 
