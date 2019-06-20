@@ -5,6 +5,7 @@ import pytest
 from diary.api import app
 from diary.config import config
 from diary.model import Session, Base, Event, Done, Types
+from sqlalchemy.orm import configure_mappers
 from starlette.testclient import TestClient
 from testfixtures import compare
 
@@ -25,6 +26,7 @@ def db(client):
     conn = engine.connect()
     transaction = conn.begin()
     try:
+        configure_mappers()
         Base.metadata.create_all(bind=conn, checkfirst=False)
         yield conn
     finally:
@@ -42,21 +44,70 @@ def session(db):
         transaction.rollback()
 
 
-def test_root_empty(session, client):
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {'count': 0}
+def test_list_empty(session, client):
+    response = client.get("/events")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [],
+        'count': 0,
+    })
 
 
-def test_root_entries(session, client):
+def test_list_entries(session, client):
     session.add_all((
-        Event(text='test', date=date(2019, 1, 1)),
-        Done(text='something', date=date(2019, 1, 2)),
+        Event(id=1, text='test', date=date(2019, 1, 1)),
+        Done(id=2, text='something', date=date(2019, 1, 2)),
     ))
     session.flush()
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {'count': 2}
+    response = client.get("/events")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [
+            {'date': '2019-01-02', 'id': 2, 'text': 'something', 'type': 'DONE'},
+            {'date': '2019-01-01', 'id': 1, 'text': 'test', 'type': 'EVENT'},
+        ],
+        'count': 2,
+    })
+
+
+def test_order_by_date_then_id(session, client):
+    session.add_all((
+        Event(id=1, text='three', date=date(2019, 1, 1)),
+        Event(id=2, text='four', date=date(2019, 1, 1)),
+        Event(id=3, text='one', date=date(2019, 1, 2)),
+        Event(id=4, text='two', date=date(2019, 1, 2)),
+    ))
+    session.flush()
+    response = client.get("/events")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [
+            {'date': '2019-01-02', 'id': 3, 'text': 'one', 'type': 'EVENT'},
+            {'date': '2019-01-02', 'id': 4, 'text': 'two', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 1, 'text': 'three', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 2, 'text': 'four', 'type': 'EVENT'},
+        ],
+        'count': 4,
+    })
+
+
+def test_filter(session, client):
+    session.add_all((
+        Event(id=1, text='FISHES', date=date(2019, 1, 1)),
+        Event(id=2, text='fish', date=date(2019, 1, 1)),
+        Event(id=3, text='dogs', date=date(2019, 1, 2)),
+        Event(id=4, text='cats', date=date(2019, 1, 2)),
+    ))
+    session.commit()
+    response = client.get("/events?text=fish")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [
+            {'date': '2019-01-01', 'id': 1, 'text': 'FISHES', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 2, 'text': 'fish', 'type': 'EVENT'},
+        ],
+        'count': 2,
+    })
 
 
 def test_create_no_data(session, client):

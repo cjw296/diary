@@ -10,12 +10,13 @@ python = "^3.7"
 fastapi = {version = "^0",extras = ["all"]}
 sqlalchemy = "^1.3"
 psycopg2 = "^2.8"
-sqlalchemy_utils = "^0.33.11"
+sqlalchemy_utils = "^0.34"
 mortar_mixins = "^2.3"
 mortar_rdb = "^3.0"
 configurator = "^1.0"
 pyyaml = "^5.1"
 alembic = "^1.0"
+sqlalchemy-searchable = "^1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.5"

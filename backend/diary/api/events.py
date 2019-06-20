@@ -1,30 +1,56 @@
 from datetime import date as DateType
 from typing import List
 
+from diary.model import Session, Types, Event
+from fastapi import APIRouter, Depends, HTTPException
+from pydantic import BaseModel, Required
 from sqlalchemy import inspect
 from sqlalchemy.orm.exc import NoResultFound
+from sqlalchemy_searchable import search
 
 from .db import db_session
-from diary.model import Session, Types, Event
-from fastapi import APIRouter, Depends, Path, HTTPException
-from pydantic import BaseModel, Required
 
 router = APIRouter()
 
 
 class EventNonPrimaryKey(BaseModel):
-    date: DateType = ...
-    type: Types = ...
-    text: str = ...
+    date: DateType = Required
+    type: Types = Required
+    text: str = Required
 
 
 class EventFull(EventNonPrimaryKey):
-    id: int = ...
+    id: int = Required
+
+
+class EventList(BaseModel):
+    items: List[EventFull] = Required
+    count: int = Required
 
 
 def simplify(obj):
     i = inspect(obj)
-    return {attr: i.dict[attr] for attr in i.manager}
+    return {attr: i.dict.get(attr) for attr in i.manager}
+
+
+@router.get("/", response_model=EventList)
+def read_items(
+    text: str = None,
+    offset: int = 0,
+    limit: int = 100,
+    session: Session = Depends(db_session),
+):
+    """
+    Retrieve Events.
+    """
+    with session.transaction:
+        items = session.query(Event).order_by(Event.date.desc(), 'id')
+        if text:
+            items = search(items, text)
+        return EventList(
+            count=items.count(),
+            items=[EventFull(**simplify(i)) for i in items.offset(offset).limit(limit)],
+        )
 
 
 @router.post("/", response_model=EventFull, status_code=201)
@@ -79,13 +105,13 @@ def get_object(
             return simplify(obj)
 
 
-@router.delete("/{id}")
+@router.delete("/{id}", response_model=EventFull)
 def delete_object(
     id: int,
     session: Session = Depends(db_session),
 ):
     """
-    Delete an item.
+    Delete an Event.
     """
     with session.transaction:
         try:
