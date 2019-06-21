@@ -13,18 +13,18 @@ router = APIRouter()
 
 
 class EventNonPrimaryKey(BaseModel):
-    date: DateType = Required
-    type: Types = Required
-    text: str = Required
+    date: DateType
+    type: Types
+    text: str
 
 
 class EventFull(EventNonPrimaryKey):
-    id: int = Required
+    id: int
 
 
 class EventList(BaseModel):
-    items: List[EventFull] = Required
-    count: int = Required
+    items: List[EventFull]
+    count: int
 
 
 def simplify(obj):

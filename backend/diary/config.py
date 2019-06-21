@@ -7,12 +7,12 @@ from pydantic import BaseModel, DSN
 
 # schema
 class DatabaseConfig(BaseModel):
-    url: DSN = ...
+    url: DSN
 
 
 class AppConfig(BaseModel):
-    testing: bool = ...
-    db: DatabaseConfig = ...
+    testing: bool
+    db: DatabaseConfig
 
 
 # defaults
