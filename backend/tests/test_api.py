@@ -26,7 +26,6 @@ def db(client):
     conn = engine.connect()
     transaction = conn.begin()
     try:
-        configure_mappers()
         Base.metadata.create_all(bind=conn, checkfirst=False)
         yield conn
     finally:

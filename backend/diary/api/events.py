@@ -6,7 +6,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Required
 from sqlalchemy import inspect
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy_searchable import search
 
 from .db import db_session
 
@@ -46,7 +45,7 @@ def read_items(
     with session.transaction:
         items = session.query(Event).order_by(Event.date.desc(), 'id')
         if text:
-            items = search(items, text)
+            items = items.filter(Event.text.ilike('%'+text.strip()+'%'))
         return EventList(
             count=items.count(),
             items=[EventFull(**simplify(i)) for i in items.offset(offset).limit(limit)],
