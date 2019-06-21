@@ -16,7 +16,6 @@ mortar_rdb = "^3.0"
 configurator = "^1.0"
 pyyaml = "^5.1"
 alembic = "^1.0"
-sqlalchemy-searchable = "^1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.5"
