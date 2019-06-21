@@ -4,7 +4,7 @@ from datetime import date
 import pytest
 from diary.api import app
 from diary.config import config
-from diary.model import Session, Base, Event, Done, Types
+from diary.model import Session, Base, Event, Types
 from sqlalchemy.orm import configure_mappers
 from starlette.testclient import TestClient
 from testfixtures import compare
@@ -55,8 +55,8 @@ def test_list_empty(session, client):
 
 def test_list_entries(session, client):
     session.add_all((
-        Event(id=1, text='test', date=date(2019, 1, 1)),
-        Done(id=2, text='something', date=date(2019, 1, 2)),
+        Event(id=1, type=Types.event, text='test', date=date(2019, 1, 1)),
+        Event(id=2, type=Types.done, text='something', date=date(2019, 1, 2)),
     ))
     session.flush()
     response = client.get("/events")
@@ -129,7 +129,6 @@ def test_create_full_data(session, client):
     })
     actual = session.query(Event).one()
     compare(actual.date, expected=date(2019, 6, 2))
-    compare(type(actual), expected=Done)
     compare(response.json(), expected={
         'id': actual.id,
         'date': '2019-06-02',
@@ -158,7 +157,6 @@ def test_update(session, client):
     compare(response.status_code, expected=200)
     actual = session.query(Event).one()
     compare(actual.date, expected=date(2019, 6, 2))
-    compare(type(actual), expected=Done)
 
 
 def test_update_not_there(session, client):

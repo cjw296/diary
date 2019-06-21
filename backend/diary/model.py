@@ -17,7 +17,6 @@ make_searchable(Base.metadata)
 Session = sessionmaker()
 
 
-
 class Types(Enum):
     event = 'EVENT'
     done = 'DONE'
@@ -31,29 +30,6 @@ class Event(Base):
 
     id = Column(Integer(), primary_key=True)
     date = Column(Date, nullable=False)
-    type = Column(ENUM(Types, name='types_enum'), nullable=False)
+    type = Column(ENUM(Types, name='types_enum'), nullable=False, default=Types.event)
     text = Column(Text, nullable=False)
     search_vector = Column(TSVectorType('text'))
-
-    __mapper_args__ = {
-        'polymorphic_identity': Types.event,
-        'polymorphic_on':type
-    }
-
-
-class Done(Event):
-    __mapper_args__ = {
-        'polymorphic_identity': Types.done,
-    }
-
-
-class Cancelled(Event):
-    __mapper_args__ = {
-        'polymorphic_identity': Types.cancelled,
-    }
-
-
-class Postponed(Event):
-    __mapper_args__ = {
-        'polymorphic_identity': Types.postponed,
-    }
