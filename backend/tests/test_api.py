@@ -5,7 +5,6 @@ import pytest
 from diary.api import app
 from diary.config import config
 from diary.model import Session, Base, Event, Types
-from sqlalchemy.orm import configure_mappers
 from starlette.testclient import TestClient
 from testfixtures import compare
 
@@ -49,6 +48,8 @@ def test_list_empty(session, client):
     compare(response.json(), expected={
         'items': [],
         'count': 0,
+        'prev': None,
+        'next': None,
     })
 
 
@@ -66,6 +67,8 @@ def test_list_entries(session, client):
             {'date': '2019-01-01', 'id': 1, 'text': 'test', 'type': 'EVENT'},
         ],
         'count': 2,
+        'prev': None,
+        'next': None,
     })
 
 
@@ -87,6 +90,8 @@ def test_order_by_date_then_id(session, client):
             {'date': '2019-01-01', 'id': 2, 'text': 'four', 'type': 'EVENT'},
         ],
         'count': 4,
+        'prev': None,
+        'next': None,
     })
 
 
@@ -106,6 +111,73 @@ def test_filter(session, client):
             {'date': '2019-01-01', 'id': 2, 'text': 'fish', 'type': 'EVENT'},
         ],
         'count': 2,
+        'prev': None,
+        'next': None,
+    })
+
+
+@pytest.fixture()
+def events(session):
+    session.add_all((
+        Event(id=1, text='1', date=date(2019, 1, 1)),
+        Event(id=2, text='2', date=date(2019, 1, 1)),
+        Event(id=3, text='3', date=date(2019, 1, 1)),
+        Event(id=4, text='4', date=date(2019, 1, 1)),
+    ))
+    session.commit()
+    return (
+            {'date': '2019-01-01', 'id': 1, 'text': '1', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 2, 'text': '2', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 3, 'text': '3', 'type': 'EVENT'},
+            {'date': '2019-01-01', 'id': 4, 'text': '4', 'type': 'EVENT'},
+    )
+
+
+def test_paging_start(events, client):
+    e1, e2, e3, e4 = events
+    response = client.get("/events?limit=2")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [e1, e2],
+        'count': 4,
+        'prev': None,
+        'next': 'http://testserver/events/?limit=2&offset=2',
+    })
+
+
+def test_paging_middle(events, client):
+    e1, e2, e3, e4 = events
+    response = client.get("/events?offset=1&limit=2")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [e2, e3],
+        'count': 4,
+        'prev': 'http://testserver/events/?limit=2&offset=0',
+        'next': 'http://testserver/events/?limit=2&offset=3',
+    })
+
+
+def test_paging_end(events, client):
+    e1, e2, e3, e4 = events
+    response = client.get("/events?offset=2&limit=2")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [e3, e4],
+        'count': 4,
+        'prev': 'http://testserver/events/?limit=2&offset=0',
+        'next': None,
+    })
+
+
+def test_paging_over_end(events, client):
+    e1, e2, e3, e4 = events
+    response = client.get("/events?offset=3&limit=2")
+    compare(response.status_code, expected=200)
+    compare(response.json(), expected={
+        'items': [e4],
+        'count': 4,
+        'prev': 'http://testserver/events/?limit=2&offset=1',
+        'next': None,
     })
 
 
