@@ -43,7 +43,7 @@ def test_invalid_config(tmpdir):
     with ShouldRaise(ValidationError) as s:
         load_config(path)
     compare(str(s.raised), expected=(
-        '1 validation error\n'
+        '1 validation error for AppConfig\n'
         'db\n'
         '  value is not a valid dict (type=type_error.dict)'
     ))
