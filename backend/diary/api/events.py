@@ -3,7 +3,7 @@ from typing import List
 from urllib.parse import urlencode
 
 from diary.model import Session, Types, Event
-from fastapi import APIRouter, Depends, HTTPException
+# from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Required
 from sqlalchemy import inspect
 from sqlalchemy.orm.exc import NoResultFound
@@ -11,7 +11,7 @@ from starlette.requests import Request
 
 from .db import db_session
 
-router = APIRouter()
+# router = APIRouter()
 
 
 class EventNonPrimaryKey(BaseModel):
