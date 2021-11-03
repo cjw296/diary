@@ -1,4 +1,0 @@
-Create a new revision and apply it:
-
-alembic revision -m "name here" --autogenerate
-alembic upgrade head
