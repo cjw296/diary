@@ -1,0 +1,20 @@
+start: day+
+
+day: date_line "="+ LF all_stuff LF*
+date_line: "(" date ")" WS_INLINE day_name LF
+date: DATE
+day_name: WORD
+all_stuff: stuff+
+stuff: ACTION WS_INLINE TITLE (LF | body)
+body:  ":" LF "--" LF LINE+ "--" LF
+
+ACTION: UCASE_LETTER+
+DATE: DIGIT~4 "-" DIGIT~2 "-" DIGIT~2
+LINE: /.+/ LF
+TITLE: /.+[^:\n]/
+
+%import common.DIGIT
+%import common.LF
+%import common.UCASE_LETTER
+%import common.WORD
+%import common.WS_INLINE
