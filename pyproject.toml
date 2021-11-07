@@ -8,7 +8,8 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "~3.9"
 configurator = "*"
-pyyaml = "^*"
+pyyaml = "*"
+requests = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
