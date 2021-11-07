@@ -1,16 +1,14 @@
 from datetime import date
 
-from lark import UnexpectedEOF
-from testfixtures import compare, ShouldRaise
+from testfixtures import compare
 
-from parse import parse
 from objects import Day, Stuff, Type
+from parse import parse
 
 
 def test_roundtrip_day_empty():
     day = Day(date(2020, 2, 1))
-    with ShouldRaise(UnexpectedEOF):
-        parse(str(day))
+    compare(parse(str(day)), expected=[day])
 
 
 def test_roundtrip_day_single():
@@ -147,4 +145,19 @@ def test_full_example():
                     "- point 3"
                 )),
             ]),
+        ])
+
+
+def test_multiple_empty():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "\n"
+            "(2021-11-04) Thursday\n"
+            "======================\n"
+        )),
+        expected=[
+            Day(date(2021, 11, 3), []),
+            Day(date(2021, 11, 4), []),
         ])

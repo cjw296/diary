@@ -4,7 +4,7 @@ day: date_line "="+ LF all_stuff LF*
 date_line: "(" date ")" WS_INLINE day_name LF
 date: DATE
 day_name: WORD
-all_stuff: stuff+
+all_stuff: stuff*
 stuff: ACTION WS_INLINE TITLE (LF | body)
 body:  ":" LF "--" LF LINE+ "--" LF
 
