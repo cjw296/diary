@@ -28,10 +28,22 @@ class Stuff:
 class Day:
     date: date
     stuff: list[Stuff] = ()
+    zope_id: str = None
+
+    def human_date(self):
+        return self.date.strftime('%a %d %b')
+
+    def title_date(self):
+        return self.date.strftime('(%Y-%m-%d) %A')
+
+    def summary(self):
+        return '\n'.join(str(s) for s in self.stuff)
 
     def __str__(self):
-        header = self.date.strftime('(%Y-%m-%d) %A')
+        header = self.title_date()
         parts = [header, '='*len(header)]
-        parts.extend(str(s) for s in self.stuff)
+        summary = self.summary()
+        if summary:
+            parts.append(summary)
         parts.append('')
         return '\n'.join(parts)

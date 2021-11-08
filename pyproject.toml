@@ -10,6 +10,7 @@ python = "~3.9"
 configurator = "*"
 pyyaml = "*"
 requests = "*"
+beautifulsoup4 = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"

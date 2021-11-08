@@ -1,30 +1,11 @@
-from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from pathlib import Path
-from pprint import pprint
 
 from configurator import Config
-from requests import Session, Response
-from testfixtures import compare
 
 from objects import Day
 from parse import parse
-
-
-@dataclass
-class Client:
-    url: str
-    username: str
-    password: str
-
-    def __post_init__(self):
-        self.session: Session = Session()
-        self.session.auth = (self.username, self.password)
-
-    def get(self, uri: str) -> Response:
-        result = self.session.get(self.url+uri)
-        result.raise_for_status()
-        return result
+from zope import Client
 
 
 def check_vm_time(client: Client):
@@ -34,6 +15,18 @@ def check_vm_time(client: Client):
         raise RuntimeError(f'VM time is {vm_now}, please fix!')
 
 
+SUNDAY = 6
+DAY = timedelta(days=1)
+
+
+def previous_sunday() -> date:
+    current = date.today()
+    current -= DAY
+    while current.weekday() != SUNDAY:
+        current -= DAY
+    return current
+
+
 def main():
     config = Config.from_path('config.yaml')
     diary_path = Path(config.diary_path).expanduser()
@@ -41,6 +34,37 @@ def main():
     client = Client(**config.zope.data)
 
     check_vm_time(client)
+    days: list[Day] = parse(diary_path.read_text())
+
+    for d, d1 in zip(days, days[1:]):
+        diff = (d1.date - d.date).days
+        assert diff == 1, f"{d.human_date()} to {d1.human_date()} was {diff} days, not 1!"
+
+    already_uploaded = {day.date: day.zope_id
+                        for day in client.list(days[0].date - timedelta(days=3))}
+
+    for day in days:
+        if not day.summary().strip():
+            print(f'Skipping {day.human_date()} as empty')
+            continue
+        zope_id = already_uploaded.get(day.date)
+        if zope_id:
+            print(f'Updating {day.human_date()}')
+            day.zope_id = zope_id
+            client.update(day)
+        else:
+            print(f'Uploading {day.human_date()}')
+            client.add(day)
+
+    target_date = date.today() + timedelta(days=6)
+    current = days[-1].date
+    while target_date > current:
+        current += timedelta(days=1)
+        days.append(Day(current))
+
+    cutoff = previous_sunday()
+    days = [day for day in days if day.date > cutoff]
+    diary_path.write_text('\n'.join(str(day) for day in days))
 
 
 if __name__ == '__main__':
