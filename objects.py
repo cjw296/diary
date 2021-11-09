@@ -26,7 +26,7 @@ class Stuff:
 
 
 @dataclass
-class Day:
+class Period:
     start: date
     stuff: list[Stuff] = ()
     end: Optional[date] = None

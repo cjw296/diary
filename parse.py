@@ -2,7 +2,7 @@ from datetime import datetime
 
 from lark import Lark, Transformer, Token
 
-from objects import Day, Stuff, Type
+from objects import Period, Stuff, Type
 
 with open('diary.lark') as grammar:
     parser = Lark(grammar)
@@ -52,9 +52,9 @@ class Diary(Transformer):
     def day(self, children):
         date_, _, stuff, *_ = children
         start, end = date_
-        return Day(start, stuff.children, end=end)
+        return Period(start, stuff.children, end=end)
 
 
-def parse(text: str) -> list[Day]:
+def parse(text: str) -> list[Period]:
     tree = parser.parse(text)
     return Diary().transform(tree)

@@ -4,7 +4,7 @@ from pathlib import Path
 from configurator import Config
 
 from config import read_config
-from objects import Day
+from objects import Period
 from parse import parse
 from zope import Client
 
@@ -34,7 +34,7 @@ def main():
 
     check_vm_time(client)
 
-    days: list[Day] = parse(config.diary_path.read_text())
+    days: list[Period] = parse(config.diary_path.read_text())
 
     for d, d1 in zip(days, days[1:]):
         diff = (d1.date - d.date).days
@@ -60,7 +60,7 @@ def main():
     current = days[-1].date
     while target_date > current:
         current += timedelta(days=1)
-        days.append(Day(current))
+        days.append(Period(current))
 
     cutoff = previous_sunday()
     days = [day for day in days if day.date > cutoff]

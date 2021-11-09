@@ -2,32 +2,32 @@ from datetime import date
 
 from testfixtures import compare
 
-from objects import Day, Stuff, Type
+from objects import Period, Stuff, Type
 from parse import parse
 
 
 def test_roundtrip_day_empty():
-    day = Day(date(2020, 2, 1))
+    day = Period(date(2020, 2, 1))
     compare(parse(str(day)), expected=[day])
 
 
 def test_roundtrip_day_single():
-    day = Day(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun')])
+    day = Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun')])
     compare(parse(str(day)), expected=[day])
 
 
 def test_roundtrip_day_start_and_end():
-    day = Day(date(2020, 2, 1), end=date(2020, 2, 3))
+    day = Period(date(2020, 2, 1), end=date(2020, 2, 3))
     compare(parse(str(day)), expected=[day])
 
 
 def test_roundtrip_day_single_with_body():
-    day = Day(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])
+    day = Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])
     compare(parse(str(day)), expected=[day])
 
 
 def test_roundtip_mixed():
-    day = Day(date(2020, 1, 1), [
+    day = Period(date(2020, 1, 1), [
         Stuff(Type.did, 'sleep'),
         Stuff(Type.cancelled, 'fun', body='bad\nthings'),
         Stuff(Type.event, 'a thing'),
@@ -44,7 +44,7 @@ def test_single_sad():
             "EVENT woke far too early :-(\n"
         )),
         expected=[
-            Day(date(2021, 11, 2), [
+            Period(date(2021, 11, 2), [
                 Stuff(Type.event, "woke far too early :-("),
             ])
         ])
@@ -59,7 +59,7 @@ def test_multi_sad_stuff():
             "DID form\n"
         )),
         expected=[
-            Day(date(2021, 11, 2), [
+            Period(date(2021, 11, 2), [
                 Stuff(Type.did, "see dentist, again :'("),
                 Stuff(Type.did, "form"),
             ])
@@ -78,10 +78,10 @@ def test_multi_day():
             "DID thing 2\n"
         )),
         expected=[
-            Day(date(2021, 11, 2), [
+            Period(date(2021, 11, 2), [
                 Stuff(Type.did, "thing 1"),
             ]),
-            Day(date(2021, 11, 3), [
+            Period(date(2021, 11, 3), [
                 Stuff(Type.did, "thing 2"),
             ]),
         ])
@@ -99,10 +99,10 @@ def test_multi_day_multi_line_separator():
             "DID thing 2\n"
         )),
         expected=[
-            Day(date(2021, 11, 2), [
+            Period(date(2021, 11, 2), [
                 Stuff(Type.did, "thing 1"),
             ]),
-            Day(date(2021, 11, 3), [
+            Period(date(2021, 11, 3), [
                 Stuff(Type.did, "thing 2"),
             ]),
         ])
@@ -133,7 +133,7 @@ def test_full_example():
             "--\n"
         )),
         expected=[
-            Day(date(2021, 11, 3), [
+            Period(date(2021, 11, 3), [
                 Stuff(Type.did, "stuff"),
                 Stuff(Type.did, "get delayed by trains", body=(
                     "19:32 Padd to Bristol - Delay/Repay, arrived shortly after 21:04, so\n"
@@ -141,7 +141,7 @@ def test_full_example():
                 )),
                 Stuff(Type.cancelled, "fun: trains delayed"),
             ]),
-            Day(date(2021, 11, 4), [
+            Period(date(2021, 11, 4), [
                 Stuff(Type.did, "more stuff"),
                 Stuff(Type.did, "submit foo:  2298535"),
                 Stuff(Type.did, "bullet point thing", body=(
@@ -163,6 +163,6 @@ def test_multiple_empty():
             "======================\n"
         )),
         expected=[
-            Day(date(2021, 11, 3), []),
-            Day(date(2021, 11, 4), []),
+            Period(date(2021, 11, 3), []),
+            Period(date(2021, 11, 4), []),
         ])

@@ -2,18 +2,18 @@ from datetime import date
 
 from testfixtures import compare, ShouldRaise
 
-from objects import Stuff, Type, Day
+from objects import Stuff, Type, Period
 
 
 def test_only_start():
-    day = Day(start=date(2020, 2, 1))
+    day = Period(start=date(2020, 2, 1))
     compare(day.start, expected=date(2020, 2, 1))
     compare(day.end, expected=None)
     compare(day.date, expected=date(2020, 2, 1))
 
 
 def test_start_and_end():
-    day = Day(start=date(2020, 2, 1), end=date(2020, 2, 3))
+    day = Period(start=date(2020, 2, 1), end=date(2020, 2, 3))
     compare(day.start, expected=date(2020, 2, 1))
     compare(day.end, expected=date(2020, 2, 3))
     with ShouldRaise(AssertionError('2020-02-03')):
@@ -21,7 +21,7 @@ def test_start_and_end():
 
 
 def test_start_and_end_same():
-    day = Day(start=date(2020, 2, 1), end=date(2020, 2, 1))
+    day = Period(start=date(2020, 2, 1), end=date(2020, 2, 1))
     compare(day.start, expected=date(2020, 2, 1))
     compare(day.end, expected=None)
     compare(day.date, expected=date(2020, 2, 1))
@@ -29,7 +29,7 @@ def test_start_and_end_same():
 
 def test_start_greater_than_end():
     with ShouldRaise(AssertionError('2020-02-02 > 2020-02-01')):
-        Day(start=date(2020, 2, 2), end=date(2020, 2, 1))
+        Period(start=date(2020, 2, 2), end=date(2020, 2, 1))
 
 
 def test_stuff_str_minimal():
@@ -53,21 +53,21 @@ def test_stuff_str_body_with_newline_at_end():
 
 
 def test_day_empty():
-    compare(str(Day(date(2020, 2, 1))), expected=(
+    compare(str(Period(date(2020, 2, 1))), expected=(
         '(2020-02-01) Saturday\n'
         '=====================\n'
     ))
 
 
 def test_start_and_end_serialized():
-    compare(str(Day(date(2020, 2, 1), end=date(2020, 2, 3))), expected=(
+    compare(str(Period(date(2020, 2, 1), end=date(2020, 2, 3))), expected=(
         '(2020-02-01) Saturday to (2020-02-03) Monday\n'
         '============================================\n'
     ))
 
 
 def test_day_single():
-    compare(str(Day(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun')])), expected=(
+    compare(str(Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun')])), expected=(
         '(2020-02-01) Saturday\n'
         '=====================\n'
         'CANCELLED fun\n'
@@ -75,7 +75,7 @@ def test_day_single():
 
 
 def test_day_single_with_body():
-    compare(str(Day(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])), expected=(
+    compare(str(Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])), expected=(
         '(2020-02-01) Saturday\n'
         '=====================\n'
         'CANCELLED fun:\n'
@@ -87,7 +87,7 @@ def test_day_single_with_body():
 
 
 def test_mixed():
-    compare(str(Day(date(2020, 1, 1), [
+    compare(str(Period(date(2020, 1, 1), [
         Stuff(Type.did, 'sleep'),
         Stuff(Type.cancelled, 'fun', body='bad\nthings\n'),
         Stuff(Type.event, 'a thing'),
@@ -107,11 +107,11 @@ def test_mixed():
 
 
 def test_human_date_no_end():
-    compare(Day(date(2020, 2, 1)).human_date(), expected='Sat 01 Feb')
+    compare(Period(date(2020, 2, 1)).human_date(), expected='Sat 01 Feb')
 
 
 def test_human_date_start_and_end_serialized():
     compare(
-        Day(date(2020, 2, 1), end=date(2020, 2, 3)).human_date(),
+        Period(date(2020, 2, 1), end=date(2020, 2, 3)).human_date(),
         expected='Sat 01 Feb to Mon 03 Feb'
     )

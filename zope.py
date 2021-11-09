@@ -5,7 +5,7 @@ from typing import Iterable
 from bs4 import BeautifulSoup
 from requests import Session, Response
 
-from objects import Day
+from objects import Period
 
 
 @dataclass
@@ -43,18 +43,18 @@ class Client:
             'addPosting:method': ' Add ',
         }
 
-    def add(self, day: Day):
+    def add(self, day: Period):
         data = self._post_data(day)
         data['addPosting:method'] = ' Add '
         self.post('', data=data)
 
-    def update(self, day: Day):
+    def update(self, day: Period):
         assert day.zope_id
         data = self._post_data(day)
         data['edit:method'] = 'Change'
         self.post(f'/{day.zope_id}', data=data)
 
-    def list(self, earliest: date) -> Iterable[Day]:
+    def list(self, earliest: date) -> Iterable[Period]:
         seen: date = date.max
         next_url = ''
 
