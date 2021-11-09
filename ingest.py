@@ -3,6 +3,7 @@ from pathlib import Path
 
 from configurator import Config
 
+from config import read_config
 from objects import Day
 from parse import parse
 from zope import Client
@@ -28,13 +29,12 @@ def previous_sunday() -> date:
 
 
 def main():
-    config = Config.from_path('config.yaml')
-    diary_path = Path(config.diary_path).expanduser()
-
-    client = Client(**config.zope.data)
+    config = read_config()
+    client = config.zope
 
     check_vm_time(client)
-    days: list[Day] = parse(diary_path.read_text())
+
+    days: list[Day] = parse(config.diary_path.read_text())
 
     for d, d1 in zip(days, days[1:]):
         diff = (d1.date - d.date).days
@@ -64,7 +64,7 @@ def main():
 
     cutoff = previous_sunday()
     days = [day for day in days if day.date > cutoff]
-    diary_path.write_text('\n'.join(str(day) for day in days))
+    config.diary_path.write_text('\n'.join(str(day) for day in days))
 
 
 if __name__ == '__main__':
