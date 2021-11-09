@@ -1,8 +1,35 @@
 from datetime import date
 
-from testfixtures import compare
+from testfixtures import compare, ShouldRaise
 
 from objects import Stuff, Type, Day
+
+
+def test_only_start():
+    day = Day(start=date(2020, 2, 1))
+    compare(day.start, expected=date(2020, 2, 1))
+    compare(day.end, expected=None)
+    compare(day.date, expected=date(2020, 2, 1))
+
+
+def test_start_and_end():
+    day = Day(start=date(2020, 2, 1), end=date(2020, 2, 3))
+    compare(day.start, expected=date(2020, 2, 1))
+    compare(day.end, expected=date(2020, 2, 3))
+    with ShouldRaise(AssertionError('2020-02-03')):
+        day.date
+
+
+def test_start_and_end_same():
+    day = Day(start=date(2020, 2, 1), end=date(2020, 2, 1))
+    compare(day.start, expected=date(2020, 2, 1))
+    compare(day.end, expected=None)
+    compare(day.date, expected=date(2020, 2, 1))
+
+
+def test_start_greater_than_end():
+    with ShouldRaise(AssertionError('2020-02-02 > 2020-02-01')):
+        Day(start=date(2020, 2, 2), end=date(2020, 2, 1))
 
 
 def test_stuff_str_minimal():
@@ -29,6 +56,13 @@ def test_day_empty():
     compare(str(Day(date(2020, 2, 1))), expected=(
         '(2020-02-01) Saturday\n'
         '=====================\n'
+    ))
+
+
+def test_start_and_end_serialized():
+    compare(str(Day(date(2020, 2, 1), end=date(2020, 2, 3))), expected=(
+        '(2020-02-01) Saturday to (2020-02-03) Monday\n'
+        '============================================\n'
     ))
 
 
@@ -70,3 +104,14 @@ def test_mixed():
         'EVENT a thing\n'
         'POSTPONED something else\n'
     ))
+
+
+def test_human_date_no_end():
+    compare(Day(date(2020, 2, 1)).human_date(), expected='Sat 01 Feb')
+
+
+def test_human_date_start_and_end_serialized():
+    compare(
+        Day(date(2020, 2, 1), end=date(2020, 2, 3)).human_date(),
+        expected='Sat 01 Feb to Mon 03 Feb'
+    )

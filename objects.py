@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
+from typing import Optional
 
 
 class Type(Enum):
@@ -26,15 +27,33 @@ class Stuff:
 
 @dataclass
 class Day:
-    date: date
+    start: date
     stuff: list[Stuff] = ()
+    end: Optional[date] = None
     zope_id: str = None
 
+    def __post_init__(self):
+        if self.start == self.end:
+            self.end = None
+        elif self.end and self.start > self.end:
+            raise AssertionError(f'{self.start} > {self.end}')
+
+    @property
+    def date(self):
+        assert self.end is None, str(self.end)
+        return self.start
+
+    def _date(self, format):
+        text = self.start.strftime(format)
+        if self.end:
+            text += self.end.strftime(' to '+format)
+        return text
+
     def human_date(self):
-        return self.date.strftime('%a %d %b')
+        return self._date('%a %d %b')
 
     def title_date(self):
-        return self.date.strftime('(%Y-%m-%d) %A')
+        return self._date('(%Y-%m-%d) %A')
 
     def summary(self):
         return '\n'.join(str(s) for s in self.stuff)
