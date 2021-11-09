@@ -31,6 +31,9 @@ class Period:
     stuff: list[Stuff] = ()
     end: Optional[date] = None
     zope_id: str = None
+    start_url: str = None
+    start_date: date = None
+    modified: date = None
 
     def __post_init__(self):
         if self.start == self.end:

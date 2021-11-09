@@ -1,11 +1,30 @@
+import calendar
+import re
 from dataclasses import dataclass
-from datetime import date, datetime
-from typing import Iterable
+from datetime import date, datetime, timedelta
+from typing import Iterable, Callable, Any, Optional
 
 from bs4 import BeautifulSoup
 from requests import Session, Response
 
 from objects import Period
+
+DATE_FORMAT = '(%Y-%m-%d) %A'
+
+DAY_PATTERN = r'(?:(\w+)\s+)?(\d{1,2})?(?:rd|th|st|nd)?(?: (\w+))?(?: (\d+))?'
+DAY_RANGE_PATTERN = re.compile(rf'^{DAY_PATTERN}(?:\s*(?:-|to)\s*{DAY_PATTERN})?$')
+
+MONTH_ALIASES = {'Sept': 'September'}
+
+
+class LookBackFailed(ValueError):
+
+    def __init__(self, possible: date, text: str):
+        self.possible = possible
+        self.text = text
+
+    def __str__(self):
+        return f"Looked back to {self.possible}, couldn't match {self.text}"
 
 
 @dataclass
@@ -54,20 +73,110 @@ class Client:
         data['edit:method'] = 'Change'
         self.post(f'/{day.zope_id}', data=data)
 
-    def list(self, earliest: date) -> Iterable[Period]:
-        seen: date = date.max
-        next_url = ''
+    @staticmethod
+    def lookback(
+            start: date,
+            text: str,
+            day_name: str,
+            day_number_text: str,
+            month_name: Optional[str],
+            year_text:  Optional[str],
+            *,
+            max_days: int
+    ):
+        day_number = int(day_number_text)
+        for i in range(max_days):
+            possible = start - timedelta(days=i)
+            if possible.day == day_number:
+                break
+        else:
+            raise LookBackFailed(possible, text) from None
+        if day_name:
+            possible_day_names = possible.strftime('%A'), possible.strftime('%a')
+            if day_name not in possible_day_names:
+                raise AssertionError(
+                    f'{possible} was a {possible_day_names[0]}, but entry had {day_name}'
+                )
+        if month_name:
+            month_name = MONTH_ALIASES.get(month_name, month_name)
+            possible_month_names = possible.strftime('%B'), possible.strftime('%b')
+            if month_name not in possible_month_names:
+                raise AssertionError(
+                    f'{possible} was in {possible_month_names[0]}, but entry had {month_name}'
+                )
+        if year_text:
+            possible_year = possible.strftime('%Y')
+            if year_text != possible_year:
+                raise AssertionError(
+                    f'{possible} was in {possible_year}, but entry had {year_text}'
+                )
+        return possible
 
+    @classmethod
+    def infer_date(cls, text: str, previous: date = None):
+        text = text.strip()
+        try:
+            inferred = datetime.strptime(text, DATE_FORMAT).date()
+        except ValueError:
+            match = DAY_RANGE_PATTERN.match(text)
+            if not match:
+                if text in calendar.day_name:
+                    for i in range(1, 5):
+                        possible = previous - timedelta(days=i)
+                        if possible.strftime('%A') == text:
+                            return possible, None
+                raise ValueError(f'Bad format: {text!r}')
+            name, day, month, year, end_name, end_day, end_month, end_year = match.groups()
+            if end_day:
+                end = cls.lookback(previous, text, end_name, end_day, end_month, end_year,
+                                   max_days=5)
+                if day and month and year:
+                    start = datetime.strptime(f'{day} {month} {year}', '%d %b %Y').date()
+                else:
+                    start = cls.lookback(end, text, name, day, month, year,
+                                         max_days=25)
+                return start, end
+            else:
+                inferred = cls.lookback(previous, text, name, day, month, year,
+                                        max_days=5)
+        else:
+            formatted = inferred.strftime(DATE_FORMAT)
+            assert formatted == text, f'{inferred:%d %b %y} was a {inferred:%A}, got: {text}'
+        return inferred, None
+
+    def list(
+            self, earliest: date,
+            handle_error: Callable[[Exception, str, date], bool] = lambda e: False,
+            next_url: str = '', seen: date = date.max,
+    ) -> Iterable[Period]:
         while earliest < seen:
             soup = self.get_soup(next_url)
+            start_date = seen
             for tag in soup.find_all('a', attrs={'name': True}):
                 date_tag = tag.find_next('strong')
                 read_url = date_tag.find_next('a', attrs={'class': 'read'})['href']
-                post_date = datetime.strptime(date_tag.text, '(%Y-%m-%d) %A').date()
+                zope_id = read_url.rsplit('/', 1)[-1]
                 modified = datetime.strptime(tag['name'], '%Y-%m-%dT%H:%M:%SZ')
-                seen = post_date
-                if post_date < earliest:
+                try:
+                    start, end = self.infer_date(date_tag.text, seen)
+                except Exception as e:
+                    if handle_error(e, read_url, modified):
+                        continue
+                    else:
+                        raise
+                seen = start
+                if start < earliest:
                     break
-                yield Day(post_date, zope_id=read_url.rsplit('/', 1)[-1])
+                yield Period(
+                    start,
+                    end=end,
+                    zope_id=zope_id,
+                    start_url=next_url,
+                    start_date=start_date,
+                    modified=modified.date()
+                )
 
-            next_url = soup.html.find_next('a', attrs={'class': 'next'})['href']
+            next_link = soup.html.find_next('a', attrs={'class': 'next'})
+            if next_link is None:
+                return
+            next_url = next_link['href']
