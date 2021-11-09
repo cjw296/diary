@@ -1,7 +1,8 @@
 start: day+
 
 day: date_line "="+ LF all_stuff LF*
-date_line: "(" date ")" WS_INLINE day_name LF
+date_line: date_pair (WS_INLINE "to" WS_INLINE date_pair)? LF
+date_pair: "(" date ")" WS_INLINE day_name
 date: DATE
 day_name: WORD
 all_stuff: stuff*

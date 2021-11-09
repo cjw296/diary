@@ -16,6 +16,11 @@ def test_roundtrip_day_single():
     compare(parse(str(day)), expected=[day])
 
 
+def test_roundtrip_day_start_and_end():
+    day = Day(date(2020, 2, 1), end=date(2020, 2, 3))
+    compare(parse(str(day)), expected=[day])
+
+
 def test_roundtrip_day_single_with_body():
     day = Day(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])
     compare(parse(str(day)), expected=[day])

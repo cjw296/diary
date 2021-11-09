@@ -21,14 +21,23 @@ class Diary(Transformer):
         day_name_, = children
         return day_name_.value
 
-    def date_line(self, children):
-        date, token, day_name, _ = children
+    def date_pair(self, children):
+        date, token, day_name = children
         date_day_name = date.strftime('%A')
         if date_day_name != day_name:
             raise AssertionError(
                 f'line {token.line}: {date} is a {date_day_name}, but day given as {day_name}'
             )
         return date
+
+    def date_line(self, children):
+        try:
+            date, _ = children
+        except ValueError:
+            start, _, _, end, _ = children
+            return start, end
+        else:
+            return date, None
 
     def body(self, children):
         _, _, *lines, _ = children
@@ -42,7 +51,8 @@ class Diary(Transformer):
 
     def day(self, children):
         date_, _, stuff, *_ = children
-        return Day(date_, stuff.children)
+        start, end = date_
+        return Day(start, stuff.children, end=end)
 
 
 def parse(text: str) -> list[Day]:
