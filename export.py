@@ -31,7 +31,7 @@ def date_from_text(text: str):
 
 def main():
     config = read_config()
-    client: Client = config.zope
+    zope: Client = config.zope
 
     parser = ArgumentParser()
     parser.add_argument('--start-url', default='')
@@ -40,7 +40,7 @@ def main():
 
     try:
         previous = None
-        for period in client.list(date.min, handle_error, args.start_url, args.start_date):
+        for period in zope.list(date.min, handle_error, args.start_url, args.start_date):
             latest = period.end or period.start
             to_previous = previous and (previous - latest).days or None
             to_modified = (period.modified - latest).days
@@ -49,12 +49,10 @@ def main():
                   f'prev: {to_previous} days',
                   f'pub: {to_modified} days',
                   f'python export.py '
-                  f'--start-url {period.start_url} --start-date {period.start_date}',
-                  ' '*20,
-                  end='\r')
+                  f'--start-url {period.start_url} --start-date {period.start_date}')
 
             error = partial(handle_error,
-                            url=f'{client.url}/{period.zope_id}',
+                            url=f'{zope.url}/{period.zope_id}',
                             modified=period.modified)
 
             if to_modified < -18:
@@ -63,6 +61,20 @@ def main():
             if not (to_previous is None or 1 <= to_previous <= 4):
                 error(f'{to_previous} days to previous!')
                 break
+
+            edit_url = f'{zope.url}/{period.zope_id}/manage'
+            print(edit_url)
+            print()
+            soup = zope.get_soup(edit_url, absolute=True)
+            summary_tag, = soup.find_all('textarea', attrs={'name': 'summary'})
+            body_tag, = soup.find_all('textarea', attrs={'name': 'body'})
+
+            try:
+                print(zope.add_stuff(period, summary_tag.text, body_tag.text))
+            except:
+                print(summary_tag)
+                print(body_tag)
+                raise
 
             previous = period.start
     except KeyboardInterrupt:

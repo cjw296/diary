@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from requests import Session, Response
 
 from objects import Period
+from parse import parse
 
 DATE_FORMAT = '(%Y-%m-%d) %A'
 
@@ -44,11 +45,11 @@ class Client:
         result.raise_for_status()
         return result
 
-    def get(self, uri: str) -> Response:
-        return self.request('get', uri)
+    def get(self, uri: str, absolute: bool = False) -> Response:
+        return self.request('get', uri, absolute)
 
-    def get_soup(self, uri: str) -> BeautifulSoup:
-        return BeautifulSoup(self.get(uri).content, features="html.parser")
+    def get_soup(self, uri: str, absolute: bool = False) -> BeautifulSoup:
+        return BeautifulSoup(self.get(uri, absolute).content, features="html.parser")
 
     def post(self, uri: str, data: dict[str, str]) -> Response:
         return self.request('post', uri, data=data)
@@ -180,3 +181,9 @@ class Client:
             if next_link is None:
                 return
             next_url = next_link['href']
+
+    @staticmethod
+    def add_stuff(period: Period, summary: str, body: str) -> Period:
+        assert not body.strip(), repr(body)
+        summary = summary.strip()+'\n'
+        return parse(str(period)+summary)[0]

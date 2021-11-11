@@ -311,3 +311,48 @@ class TestInferDates:
                 actual=Client.infer_date(
                     '4th June - 8th June', previous=date(2008, 6, 9)
                 ))
+
+
+class TestAddStuff:
+
+    def test_simple(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    'DID something\n'
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+            ])
+        )
+
+    def test_no_newlines_at_end(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    'DID something'
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+            ])
+        )
+
+    def test_no_whitespace_at_end(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    'DID something\n \t\n \n\n'
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+            ])
+        )
