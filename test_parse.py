@@ -169,6 +169,18 @@ def test_multiple_empty():
         ])
 
 
+def test_colon_after_event():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "EVENT: something happened\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [Stuff(Type.event, 'something happened')]),
+        ])
+
+
 class TestInferDates:
 
     def test_standard(self):

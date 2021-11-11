@@ -6,7 +6,7 @@ date_pair: "(" date ")" WS_INLINE day_name
 date: DATE
 day_name: WORD
 all_stuff: stuff*
-stuff: ACTION WS_INLINE TITLE (LF | body)
+stuff: ACTION ":"? WS_INLINE TITLE (LF | body)
 body:  ":" LF "--" LF LINE+ "--" LF
 
 ACTION: UCASE_LETTER+
