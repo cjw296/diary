@@ -11,6 +11,21 @@ class Type(Enum):
     postponed = 'POSTPONED'
 
 
+TYPE_SYNONYMS = {
+    'CANCEL': Type.cancelled
+}
+
+
+def text_to_type(text: str) -> Type:
+    try:
+        return Type(text)
+    except ValueError:
+        type_ = TYPE_SYNONYMS.get(text)
+        if type_ is None:
+            raise
+        return type_
+
+
 @dataclass
 class Stuff:
     type: Type

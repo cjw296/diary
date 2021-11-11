@@ -2,7 +2,7 @@ from datetime import datetime
 
 from lark import Lark, Transformer, Token
 
-from objects import Period, Stuff, Type
+from objects import Period, Stuff, text_to_type
 
 with open('diary.lark') as grammar:
     parser = Lark(grammar, parser='lalr')
@@ -47,7 +47,7 @@ class Diary(Transformer):
         action, _, title, body = children
         if isinstance(body, Token):
             body = None
-        return Stuff(Type(action.value), title.value, body)
+        return Stuff(text_to_type(action.value), title.value, body)
 
     def day(self, children):
         date_, _, stuff, *_ = children

@@ -181,6 +181,18 @@ def test_colon_after_event():
         ])
 
 
+def test_stuff_synonyms():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "CANCEL everything\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [Stuff(Type.cancelled, 'everything')]),
+        ])
+
+
 def test_newline_in_body():
     compare(
         parse((
