@@ -7,11 +7,13 @@ date: DATE
 day_name: WORD
 all_stuff: stuff*
 stuff: ACTION ":"? WS_INLINE TITLE (LF | body)
-body:  ":" LF "--" LF LINE+ "--" LF
+body:  START_BODY LINE+ END_BODY
 
 ACTION: UCASE_LETTER+
 DATE: DIGIT~4 "-" DIGIT~2 "-" DIGIT~2
-LINE: /.+/ LF
+START_BODY: ":" LF "--" LF
+END_BODY.1: "--" LF
+LINE.0: /.*/ LF
 TITLE: /.+[^:\n]/
 
 %import common.DIGIT

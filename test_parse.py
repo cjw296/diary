@@ -181,6 +181,25 @@ def test_colon_after_event():
         ])
 
 
+def test_newline_in_body():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID something interesting:\n"
+            "--\n"
+            "part 1\n"
+            "\n"
+            "part 2\n"
+            "--\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [
+                Stuff(Type.did, 'something interesting', 'part 1\n\npart 2')
+            ]),
+        ])
+
+
 class TestInferDates:
 
     def test_standard(self):

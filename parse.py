@@ -5,7 +5,7 @@ from lark import Lark, Transformer, Token
 from objects import Period, Stuff, Type
 
 with open('diary.lark') as grammar:
-    parser = Lark(grammar)
+    parser = Lark(grammar, parser='lalr')
 
 
 class Diary(Transformer):
@@ -40,7 +40,7 @@ class Diary(Transformer):
             return date, None
 
     def body(self, children):
-        _, _, *lines, _ = children
+        _, *lines, _ = children
         return ''.join(lines).strip()
 
     def stuff(self, children):
