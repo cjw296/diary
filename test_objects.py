@@ -43,8 +43,11 @@ def test_stuff_str_newlines_at_end():
 
 
 def test_stuff_str_maximal():
-    compare(str(Stuff(Type.did, title='A thing', body='some body text\nmore lines')),
-            expected='DID A thing:\n--\nsome body text\nmore lines\n--')
+    compare(str(Stuff(Type.did,
+                      title='A thing',
+                      body='some body text\nmore lines',
+                      tags=['tag1', 'tag2'])),
+            expected='DID:tag1:tag2 A thing:\n--\nsome body text\nmore lines\n--')
 
 
 def test_stuff_str_body_with_newline_at_end():

@@ -31,9 +31,11 @@ class Stuff:
     type: Type
     title: str
     body: str = None
+    tags: list[str] = None
 
     def __str__(self):
-        text = f'{self.type.value} {self.title.strip()}'
+        tags = ''.join(f':{tag}' for tag in (self.tags or ()))
+        text = f'{self.type.value}{tags} {self.title.strip()}'
         if self.body:
             body = self.body if self.body.endswith('\n') else self.body+'\n'
             text += f':\n--\n{body}--'

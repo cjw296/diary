@@ -193,6 +193,35 @@ def test_stuff_synonyms():
         ])
 
 
+def test_tags():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID:tag1:tag2 some thing\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [Stuff(Type.did, 'some thing', tags=['tag1', 'tag2'])]),
+        ])
+
+
+def test_tags_with_body():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID:tag1:tag2 some thing:\n"
+            "--\n"
+            "The body\n"
+            "--\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [
+                Stuff(Type.did, 'some thing', body='The body', tags=['tag1', 'tag2'])
+            ]),
+        ])
+
+
 def test_newline_in_body():
     compare(
         parse((

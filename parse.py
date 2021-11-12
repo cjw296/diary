@@ -44,10 +44,11 @@ class Diary(Transformer):
         return ''.join(lines).strip()
 
     def stuff(self, children):
-        action, _, title, body = children
+        action, tags, _, title, body = children
         if isinstance(body, Token):
             body = None
-        return Stuff(text_to_type(action.value), title.value, body)
+        return Stuff(text_to_type(action.value), title.value, body,
+                     tags=[tag.value[1:] for tag in tags.children] or None)
 
     def day(self, children):
         date_, _, stuff, *_ = children
