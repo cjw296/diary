@@ -545,3 +545,21 @@ class TestAddStuff:
                 Stuff(Type.event, "some stuff here"),
             ])
         )
+
+    def test_fix_missed_last_cap(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "An event\n"
+                    "DId something\n"
+                    "CANCELLEd something else\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.event, "An event"),
+                Stuff(Type.did, "something"),
+                Stuff(Type.cancelled, "something else"),
+            ])
+        )

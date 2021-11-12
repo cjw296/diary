@@ -189,6 +189,13 @@ class Client:
         summary = summary.strip()
         # remove trailing whitespace
         summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
+        # fix missing caps
+        summary = re.sub(
+            r'^([A-Z]{2,})([a-z])(\s)',
+            lambda m: m.group(1)+m.group(2).upper()+m.group(3),
+            summary,
+            flags=re.MULTILINE
+        )
         # remove blank lines
         summary = summary.replace('\n\n', '\n')
         # any initial text becomes an event:

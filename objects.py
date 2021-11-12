@@ -12,7 +12,18 @@ class Type(Enum):
 
 
 TYPE_SYNONYMS = {
-    'CANCEL': Type.cancelled
+    'CANCEL': Type.cancelled,
+    'CANCELED': Type.cancelled,
+    'CANCELLD': Type.cancelled,
+    'CANCELELD': Type.cancelled,
+    'CANDELLED': Type.cancelled,
+    'CANELLED': Type.cancelled,
+    'CANNCELLED': Type.cancelled,
+    'DDI': Type.did,
+    'DD': Type.did,
+    'DI': Type.did,
+    'EVEN': Type.event,
+    'EVENTS': Type.event,
 }
 
 
