@@ -241,6 +241,23 @@ def test_newline_in_body():
         ])
 
 
+def test_body_missing_colon():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID thing\n"
+            "--\n"
+            "The body\n"
+            "--\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [
+                Stuff(Type.did, 'thing', body='The body')
+            ]),
+        ])
+
+
 class TestInferDates:
 
     def test_standard(self):
