@@ -185,5 +185,10 @@ class Client:
     @staticmethod
     def add_stuff(period: Period, summary: str, body: str) -> Period:
         assert not body.strip(), repr(body)
-        summary = summary.strip()+'\n'
-        return parse(str(period)+summary)[0]
+        # remove leading and trailing whitespace
+        summary = summary.strip()
+        # remove trailing whitespace
+        summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
+        # remove blank lines
+        summary = summary.replace('\n\n', '\n')
+        return parse(str(period)+summary+'\n')[0]

@@ -414,3 +414,57 @@ class TestAddStuff:
                 Stuff(Type.did, "something"),
             ])
         )
+
+    def test_whitespace_between_lines(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID thing 1\n"
+                    " \t\n"
+                    "DID thing 2\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "thing 1"),
+                Stuff(Type.did, "thing 2"),
+            ])
+        )
+
+    def test_whitespace_in_stuff(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID thing:\n"
+                    "--\n"
+                    "part 1\n"
+                    " \t\n"
+                    "part 2\n"
+                    "--\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "thing", body='part 1\npart 2'),
+            ])
+        )
+
+    def test_whitespace_in_body_syntax(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID thing: \n"
+                    "--\n"
+                    "body 1\t\n"
+                    "body 2\n"
+                    "-- \n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "thing", body='body 1\nbody 2'),
+            ])
+        )
