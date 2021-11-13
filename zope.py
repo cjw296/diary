@@ -191,4 +191,12 @@ class Client:
         summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
         # remove blank lines
         summary = summary.replace('\n\n', '\n')
-        return parse(str(period)+summary+'\n')[0]
+        try:
+            return parse(source)[0]
+        except Exception as e:
+            line = getattr(e, 'line', None)
+            if line is None:
+                raise
+            before = '\n'.join(source.split('\n')[:line])
+            pointer = ' '*(e.column-1)+'^'
+            raise ValueError(f'\n{e}\n\n{before}\n{pointer}') from None
