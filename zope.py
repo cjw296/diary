@@ -191,6 +191,10 @@ class Client:
         summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
         # remove blank lines
         summary = summary.replace('\n\n', '\n')
+        # any initial text becomes an event:
+        if not re.match('^[A-Z]+ ', summary):
+            summary = 'EVENT '+summary
+        source = str(period)+summary+'\n'
         try:
             return parse(source)[0]
         except Exception as e:

@@ -468,3 +468,36 @@ class TestAddStuff:
                 Stuff(Type.did, "thing", body='body 1\nbody 2'),
             ])
         )
+
+
+    def test_leading_event(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "event\n"
+                    "DID action 1\n"
+                    "DID action 2\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.event, "event"),
+                Stuff(Type.did, "action 1"),
+                Stuff(Type.did, "action 2"),
+            ])
+        )
+
+    def test_just_event(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "some stuff here"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.event, "some stuff here"),
+            ])
+        )
