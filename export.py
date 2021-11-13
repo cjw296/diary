@@ -1,3 +1,4 @@
+import html
 from argparse import ArgumentParser
 from datetime import timedelta, date, datetime
 from functools import partial
@@ -69,7 +70,7 @@ def main():
             summary_tag, = soup.find_all('textarea', attrs={'name': 'summary'})
             body_tag, = soup.find_all('textarea', attrs={'name': 'body'})
 
-            print(zope.add_stuff(period, summary_tag.text, body_tag.text))
+            print(zope.add_stuff(period, html.unescape(summary_tag.text), body_tag.text))
 
             previous = period.start
     except KeyboardInterrupt:
