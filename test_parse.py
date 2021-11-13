@@ -258,6 +258,50 @@ def test_body_missing_colon():
         ])
 
 
+def test_body_excess_dashes():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID thing:\n"
+            "---\n"
+            "The body\n"
+            "---\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [
+                Stuff(Type.did, 'thing', body='The body')
+            ]),
+        ])
+
+
+def test_body_dashy_table():
+    compare(
+        parse((
+            "(2021-11-03) Wednesday\n"
+            "======================\n"
+            "DID run some sql:\n"
+            "--\n"
+            "db=# select some stuff\n"
+            "   sum   | ?column?\n"
+            "---------+----------\n"
+            " -350.50 | 571 days\n"
+            "(1 row)\n"
+            "--\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 3), [
+                Stuff(Type.did, 'run some sql', body=(
+                    "db=# select some stuff\n"
+                    "   sum   | ?column?\n"
+                    "---------+----------\n"
+                    " -350.50 | 571 days\n"
+                    "(1 row)"
+                ))
+            ]),
+        ])
+
+
 class TestInferDates:
 
     def test_standard(self):

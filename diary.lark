@@ -12,8 +12,8 @@ tags: TAG*
 
 ACTION: UCASE_LETTER+
 DATE: DIGIT~4 "-" DIGIT~2 "-" DIGIT~2
-START_BODY: ":"? LF "--" LF
-END_BODY.1: "--" LF
+START_BODY: ":"? LF "--" "-"? LF
+END_BODY.1: "--" "-"? LF
 LINE.0: /.*/ LF
 TITLE: /.+[^:\n]/
 TAG: ":" CNAME+
