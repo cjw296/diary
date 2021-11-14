@@ -201,6 +201,9 @@ class Client:
         # any initial text becomes an event:
         if not re.match('^[A-Z]+ ', summary):
             summary = 'EVENT '+summary
+        if re.search(r'\n\(.+\)$', summary):
+            head, tail = summary.rsplit('\n', 1)
+            summary = head + '\n' + 'EVENT '+tail
         source = str(period)+summary+'\n'
         try:
             return parse(source)[0]

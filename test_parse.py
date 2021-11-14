@@ -563,3 +563,35 @@ class TestAddStuff:
                 Stuff(Type.cancelled, "something else"),
             ])
         )
+
+    def test_brackets_last_line_becomes_event(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                    "(An event)\n \n\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.event, "(An event)"),
+            ])
+        )
+
+    def test_no_event_doubling(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                    "EVENT (An event)\n \n\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.event, "(An event)"),
+            ])
+        )
