@@ -7,6 +7,7 @@ from typing import Optional
 class Type(Enum):
     event = 'EVENT'
     did = 'DID'
+    didnt = "DIDN'T"
     cancelled = 'CANCELLED'
     postponed = 'POSTPONED'
 

@@ -51,6 +51,20 @@ def test_single_sad():
         ])
 
 
+def test_did_not():
+    compare(
+        parse((
+            "(2021-11-02) Tuesday\n"
+            "==================\n"
+            "DIDN'T do anything\n"
+        )),
+        expected=[
+            Period(date(2021, 11, 2), [
+                Stuff(Type.didnt, "do anything"),
+            ])
+        ])
+
+
 def test_multi_sad_stuff():
     compare(
         parse((
@@ -512,7 +526,6 @@ class TestAddStuff:
                 Stuff(Type.did, "thing", body='body 1\nbody 2'),
             ])
         )
-
 
     def test_leading_event(self):
         compare(

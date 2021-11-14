@@ -10,7 +10,7 @@ stuff: ACTION tags ":"? WS_INLINE TITLE (LF | body)
 body:  START_BODY LINE+ END_BODY
 tags: TAG*
 
-ACTION: UCASE_LETTER+
+ACTION: (UCASE_LETTER| "'")+
 DATE: DIGIT~4 "-" DIGIT~2 "-" DIGIT~2
 START_BODY: ":"? LF "--" "-"? LF
 END_BODY.1: "--" "-"? LF
