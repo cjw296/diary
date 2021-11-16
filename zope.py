@@ -194,11 +194,15 @@ class Client:
         summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
         # fix missing caps
         summary = re.sub(
-            r'^([A-Z]{2,})([a-z])(\s)',
+            r"^([A-Z]{2})([a-zA-Z']+)(\s)",
             lambda m: m.group(1)+m.group(2).upper()+m.group(3),
             summary,
             flags=re.MULTILINE
         )
+        # handle "GAVE UP on"
+        summary = re.sub(r'^GAVE UP on', 'CANCELLED', summary, flags=re.MULTILINE)
+        # handle "didn't"
+        summary = re.sub(r"^[Dd]idn't ", "DIDN'T ", summary, flags=re.MULTILINE)
         # any initial text becomes an event:
         if not re.match('^[A-Z]+:? ', summary):
             summary = 'EVENT '+summary

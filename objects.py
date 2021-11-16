@@ -14,6 +14,8 @@ class Type(Enum):
 
 
 TYPE_SYNONYMS = {
+    'ABANDONED': Type.cancelled,
+    'ABANDONDED': Type.cancelled,
     'CANCEL': Type.cancelled,
     'CANCELED': Type.cancelled,
     'CANCELLD': Type.cancelled,
@@ -24,8 +26,14 @@ TYPE_SYNONYMS = {
     'DDI': Type.did,
     'DD': Type.did,
     'DI': Type.did,
+    'DITCHED': Type.cancelled,
+    "DDN'T": Type.didnt,
+    'DIDNT': Type.didnt,
     'EVEN': Type.event,
     'EVENTS': Type.event,
+    'POPSTPONED': Type.postponed,
+    'RESCHEDULED': Type.postponed,
+    'SUSPENDED': Type.postponed,
 }
 
 

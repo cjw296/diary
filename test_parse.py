@@ -567,6 +567,7 @@ class TestAddStuff:
                     "An event\n"
                     "DId something\n"
                     "CANCELLEd something else\n"
+                    "DIdN't do another thing\n"
                 ),
                 body='\n',
             ),
@@ -574,6 +575,7 @@ class TestAddStuff:
                 Stuff(Type.event, "An event"),
                 Stuff(Type.did, "something"),
                 Stuff(Type.cancelled, "something else"),
+                Stuff(Type.didnt, "do another thing"),
             ])
         )
 
@@ -668,5 +670,39 @@ class TestAddStuff:
             expected=Period(start=date(2021, 11, 9), stuff=[
                 Stuff(Type.did, "something"),
                 Stuff(Type.note, "from body", body="some\nstuff\nhere"),
+            ])
+        )
+
+    def test_gave_up(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                    "GAVE UP on something else\n"
+                    "DID more\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.cancelled, "something else"),
+                Stuff(Type.did, "more"),
+            ])
+        )
+
+    def test_initial_lowercase_didnt(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                    "didn't do something\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.didnt, "do something"),
             ])
         )
