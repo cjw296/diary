@@ -553,6 +553,7 @@ class TestAddStuff:
                     "some stuff here"
                 ),
                 body='\n',
+                modified=date(2002, 10, 4),
             ),
             expected=Period(start=date(2021, 11, 9), stuff=[
                 Stuff(Type.event, "some stuff here"),
@@ -704,5 +705,28 @@ class TestAddStuff:
             expected=Period(start=date(2021, 11, 9), stuff=[
                 Stuff(Type.did, "something"),
                 Stuff(Type.didnt, "do something"),
+            ])
+        )
+
+    def test_old(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "something\n"
+                    "something else\n"
+                    " \t\n"
+                    "more\n"
+                    "\n"
+                    "other stuff\n"
+                ),
+                body='\n',
+                modified=date(2002, 10, 3)
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.event, "something"),
+                Stuff(Type.event, "something else"),
+                Stuff(Type.event, "more"),
+                Stuff(Type.event, "other stuff"),
             ])
         )

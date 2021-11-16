@@ -183,34 +183,38 @@ class Client:
             next_url = next_link['href']
 
     @staticmethod
-    def add_stuff(period: Period, summary: str, body: str) -> Period:
+    def add_stuff(period: Period, summary: str, body: str, modified: date = None) -> Period:
         # remove leading and trailing whitespace
         summary = summary.strip()
-        # event pattern of blank line plus text at end
-        if re.search(r'\n\n[\w][a-z]+.+$', summary):
-            head, tail = summary.rsplit('\n', 1)
-            summary = head + '\n' + 'EVENT '+tail
-        # remove trailing whitespace on lines
-        summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
-        # fix missing caps
-        summary = re.sub(
-            r"^([A-Z]{2})([a-zA-Z']+)(\s)",
-            lambda m: m.group(1)+m.group(2).upper()+m.group(3),
-            summary,
-            flags=re.MULTILINE
-        )
-        # handle "GAVE UP on"
-        summary = re.sub(r'^GAVE UP on', 'CANCELLED', summary, flags=re.MULTILINE)
-        # handle "didn't"
-        summary = re.sub(r"^[Dd]idn't ", "DIDN'T ", summary, flags=re.MULTILINE)
-        # any initial text becomes an event:
-        if not re.match('^[A-Z]+:? ', summary):
-            summary = 'EVENT '+summary
-        # any final text in brackets becomes an event:
-        if re.search(r'\n\(.+\)$', summary):
-            head, tail = summary.rsplit('\n', 1)
-            summary = head + '\n' + 'EVENT '+tail
-        source = str(period)+summary+'\n'
+        if modified is None or modified >= date(2002, 10, 4):
+            # event pattern of blank line plus text at end
+            if re.search(r'\n\n[\w][a-z]+.+$', summary):
+                head, tail = summary.rsplit('\n', 1)
+                summary = head + '\n' + 'EVENT '+tail
+            # remove trailing whitespace on lines
+            summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
+            # fix missing caps
+            summary = re.sub(
+                r"^([A-Z]{2})([a-zA-Z']+)(\s)",
+                lambda m: m.group(1)+m.group(2).upper()+m.group(3),
+                summary,
+                flags=re.MULTILINE
+            )
+            # handle "GAVE UP on"
+            summary = re.sub(r'^GAVE UP on', 'CANCELLED', summary, flags=re.MULTILINE)
+            # handle "didn't"
+            summary = re.sub(r"^[Dd]idn't ", "DIDN'T ", summary, flags=re.MULTILINE)
+            # any initial text becomes an event:
+            if not re.match('^[A-Z]+:? ', summary):
+                summary = 'EVENT '+summary
+            # any final text in brackets becomes an event:
+            if re.search(r'\n\(.+\)$', summary):
+                head, tail = summary.rsplit('\n', 1)
+                summary = head + '\n' + 'EVENT '+tail
+        else:
+            lines = [line.strip() for line in summary.split('\n')]
+            summary = '\n'.join(f'EVENT '+line for line in lines if line)
+        source = str(period) + summary + '\n'
         body = body.strip()
         if body and body != '-':
             source += ('NOTE from body:\n--\n'+body+'\n--\n')
