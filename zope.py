@@ -184,7 +184,6 @@ class Client:
 
     @staticmethod
     def add_stuff(period: Period, summary: str, body: str) -> Period:
-        assert not body.strip(), repr(body)
         # remove leading and trailing whitespace
         summary = summary.strip()
         # remove trailing whitespace
@@ -205,6 +204,9 @@ class Client:
             head, tail = summary.rsplit('\n', 1)
             summary = head + '\n' + 'EVENT '+tail
         source = str(period)+summary+'\n'
+        body = body.strip()
+        if body and body != '-':
+            source += ('NOTE from body:\n--\n'+body+'\n--\n')
         try:
             return parse(source)[0]
         except Exception as e:

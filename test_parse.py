@@ -608,3 +608,32 @@ class TestAddStuff:
                 Stuff(Type.event, "(An event)"),
             ])
         )
+
+    def test_body_with_dashes(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                ),
+                body='-\n\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+            ])
+        )
+
+    def test_note(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n"
+                ),
+                body='some\nstuff\nhere\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.note, "from body", body="some\nstuff\nhere"),
+            ])
+        )

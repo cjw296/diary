@@ -8,6 +8,7 @@ class Type(Enum):
     event = 'EVENT'
     did = 'DID'
     didnt = "DIDN'T"
+    note = "NOTE"
     cancelled = 'CANCELLED'
     postponed = 'POSTPONED'
 
