@@ -593,6 +593,22 @@ class TestAddStuff:
             ])
         )
 
+    def test_last_line_event(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "DID something\n\n"
+                    "An event\n \n\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.did, "something"),
+                Stuff(Type.event, "An event"),
+            ])
+        )
+
     def test_no_event_doubling(self):
         compare(
             Client.add_stuff(
@@ -606,6 +622,23 @@ class TestAddStuff:
             expected=Period(start=date(2021, 11, 9), stuff=[
                 Stuff(Type.did, "something"),
                 Stuff(Type.event, "(An event)"),
+            ])
+        )
+
+    def test_initial_event_followed_by_colon(self):
+        compare(
+            Client.add_stuff(
+                Period(start=date(2021, 11, 9)),
+                summary=(
+                    "EVENT: SOMEWHERE :-):\n"
+                    "--\n"
+                    "some stuff\n"
+                    "--\n"
+                ),
+                body='\n',
+            ),
+            expected=Period(start=date(2021, 11, 9), stuff=[
+                Stuff(Type.event, "SOMEWHERE :-)", body='some stuff'),
             ])
         )
 

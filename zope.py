@@ -186,7 +186,11 @@ class Client:
     def add_stuff(period: Period, summary: str, body: str) -> Period:
         # remove leading and trailing whitespace
         summary = summary.strip()
-        # remove trailing whitespace
+        # event pattern of blank line plus text at end
+        if re.search(r'\n\n[\w][a-z]+.+$', summary):
+            head, tail = summary.rsplit('\n', 1)
+            summary = head + '\n' + 'EVENT '+tail
+        # remove trailing whitespace on lines
         summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
         # fix missing caps
         summary = re.sub(
@@ -195,11 +199,10 @@ class Client:
             summary,
             flags=re.MULTILINE
         )
-        # remove blank lines
-        summary = summary.replace('\n\n', '\n')
         # any initial text becomes an event:
-        if not re.match('^[A-Z]+ ', summary):
+        if not re.match('^[A-Z]+:? ', summary):
             summary = 'EVENT '+summary
+        # any final text in brackets becomes an event:
         if re.search(r'\n\(.+\)$', summary):
             head, tail = summary.rsplit('\n', 1)
             summary = head + '\n' + 'EVENT '+tail
