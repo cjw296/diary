@@ -12,8 +12,11 @@ from zope import Client
 def check_vm_time(client: Client):
     vm_now = datetime.strptime(client.get('/vm_now').text, '%Y-%m-%dT%H:%M:%S\n')
     local_now = datetime.now()
-    if not (local_now > vm_now and local_now-vm_now < timedelta(seconds=5)):
-        raise RuntimeError(f'VM time is {vm_now}, please fix!')
+    delta = abs(local_now-vm_now)
+    if delta > timedelta(seconds=5):
+        raise RuntimeError(
+            f'VM time is {vm_now} but local time is {local_now} ({delta}, please fix!'
+        )
 
 
 SUNDAY = 6
