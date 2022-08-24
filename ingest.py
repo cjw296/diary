@@ -1,3 +1,4 @@
+from argparse import Namespace, ArgumentParser
 from datetime import datetime, timedelta, date
 from pathlib import Path
 
@@ -31,8 +32,15 @@ def previous_sunday() -> date:
     return current
 
 
+def parse_args() -> Namespace:
+    parser = ArgumentParser()
+    parser.add_argument('--no-trim', dest='trim', action='store_false')
+    return parser.parse_args()
+
+
 def main():
     config = read_config()
+    args = parse_args()
     client = config.zope
 
     check_vm_time(client)
@@ -65,8 +73,9 @@ def main():
         current += timedelta(days=1)
         days.append(Period(current))
 
-    cutoff = previous_sunday()
-    days = [day for day in days if day.date > cutoff]
+    if args.trim:
+        cutoff = previous_sunday()
+        days = [day for day in days if day.date > cutoff]
     config.diary_path.write_text('\n'.join(str(day) for day in days))
 
 
