@@ -2,9 +2,8 @@ from argparse import Namespace, ArgumentParser
 from datetime import datetime, timedelta, date
 from pathlib import Path
 
-from configurator import Config
-
 from config import read_config
+from export import dump
 from objects import Period
 from parse import parse
 from zope import Client
@@ -54,7 +53,10 @@ def main():
     already_uploaded = {day.date: day.zope_id
                         for day in client.list(days[0].date - timedelta(days=3))}
 
+    dump_path = Path(config.dump).expanduser()
+
     for day in days:
+        dump(dump_path, day)
         if not day.summary().strip():
             print(f'Skipping {day.human_date()} as empty')
             continue

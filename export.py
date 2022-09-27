@@ -2,9 +2,11 @@ import html
 from argparse import ArgumentParser
 from datetime import timedelta, date, datetime
 from functools import partial
+from pathlib import Path
 from typing import Union
 
 from config import read_config
+from objects import Period
 from zope import Client, LookBackFailed
 
 SUNDAY = 6
@@ -30,6 +32,15 @@ def date_from_text(text: str):
     return datetime.strptime(text, '%Y-%m-%d').date()
 
 
+def dump(path: Path, period: Period):
+    year = str(period.start.year)
+    month = f'{period.start.month:02}'
+    day = f'{period.start.day:02}.txt'
+    container = path / year / month
+    container.mkdir(exist_ok=True, parents=True)
+    (container / day).write_text(str(period))
+
+
 def main():
     config = read_config()
     zope: Client = config.zope
@@ -37,6 +48,7 @@ def main():
     parser = ArgumentParser()
     parser.add_argument('--start-url', default='')
     parser.add_argument('--start-date', default=date.max, type=date_from_text)
+    parser.add_argument('--dump', type=Path)
     args = parser.parse_args()
 
     try:
@@ -70,9 +82,14 @@ def main():
             summary_tag, = soup.find_all('textarea', attrs={'name': 'summary'})
             body_tag, = soup.find_all('textarea', attrs={'name': 'body'})
 
-            print(zope.add_stuff(
+            period = zope.add_stuff(
                 period, html.unescape(summary_tag.text), body_tag.text, period.modified
-            ))
+            )
+
+            print(period)
+
+            if args.dump:
+                dump(args.dump.expanduser(), period)
 
             previous = period.start
     except KeyboardInterrupt:
