@@ -55,10 +55,14 @@ class Client:
         return self.request('post', uri, data=data)
 
     def _post_data(self, day) -> dict[str, str]:
+        try:
+            summary = day.summary().encode('latin-1')
+        except UnicodeEncodeError as e:
+            raise Exception(f'{e}: '+day.summary().encode('latin-1', 'replace').decode('latin-1'))
         return {
             'title': day.title_date(),
             'author': '-',
-            'summary': day.summary().encode('latin-1'),
+            'summary': summary,
             'encoding': 'Plain',
             'addPosting:method': ' Add ',
         }
