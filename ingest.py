@@ -31,9 +31,14 @@ def previous_sunday() -> date:
     return current
 
 
+def parse_date(text) -> date:
+    return datetime.strptime(text, '%Y-%m-%d').date()
+
+
 def parse_args() -> Namespace:
     parser = ArgumentParser()
     parser.add_argument('--no-trim', dest='trim', action='store_false')
+    parser.add_argument('--target', type=parse_date)
     return parser.parse_args()
 
 
@@ -69,7 +74,7 @@ def main():
             print(f'Uploading {day.human_date()}')
             client.add(day)
 
-    target_date = date.today() + timedelta(days=6)
+    target_date = args.target or date.today() + timedelta(days=6)
     current = days[-1].date
     while target_date > current:
         current += timedelta(days=1)
