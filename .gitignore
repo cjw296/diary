@@ -2,3 +2,4 @@
 backend/app.yml
 .coverage
 config.yaml
+.venv
