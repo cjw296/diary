@@ -6,6 +6,7 @@ authors = ["Chris Withers <chris@withers.org>"]
 readme = "README.rst"
 requires-python = ">=3.12"
 dependencies = [
+    "alembic>=1.13.3",
     "beautifulsoup4>=4.12.3",
     "configurator>=3.2.0",
     "lark>=1.2.2",
