@@ -1,0 +1,1 @@
+from pytest_alembic.tests import test_model_definitions_match_ddl
