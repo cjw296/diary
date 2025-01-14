@@ -9,7 +9,7 @@ dependencies = [
     "alembic>=1.13.3",
     "beautifulsoup4>=4.12.3",
     "configurator>=3.2.0",
-    "fastapi[standard]>=0.115.2",
+    "fastapi[standard]>=0.115.6",
     "lark>=1.2.2",
     "mortar-sqlalchemy>=4.0.0",
     "passlib[bcrypt]<2",
@@ -18,7 +18,6 @@ dependencies = [
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
     "sqlmodel>=0.0.22",
-    "testservices",
 ]
 
 [tool.uv]
@@ -28,4 +27,5 @@ dev-dependencies = [
     "testfixtures>=8.3.0",
     "pytest-alembic>=0.11.1",
     "black>=24.10.0",
+    "testservices>=0.3.0",
 ]
