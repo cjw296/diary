@@ -31,3 +31,11 @@ def login_access_token(
             user.id, expires_delta=access_token_expires
         )
     )
+
+
+@router.post("/login/test-token", response_model=UserPublic)
+def test_token(current_user: CurrentUser) -> Any:
+    """
+    Test access token
+    """
+    return current_user

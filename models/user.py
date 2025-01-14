@@ -61,12 +61,10 @@ class User(UserBase, table=True):
             user_create, update={"hashed_password": get_password_hash(user_create.password)}
         )
         session.add(db_obj)
-        session.commit()
-        session.refresh(db_obj)
         return db_obj
 
     @classmethod
-    def by_email(cls, session: Session, email: EmailStr) -> Self:
+    def by_email(cls, session: Session, email: EmailStr) -> Self | None:
         statement = select(cls).where(cls.email == email)
         session_user = session.exec(statement).first()
         return session_user
