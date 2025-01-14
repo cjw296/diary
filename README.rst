@@ -10,7 +10,12 @@ In your git clone:
 
 .. code-block:: bash
 
-  poetry install
+  uv sync
+
+Running Scripts
+---------------
+
+uv run ingest.py --help
 
 Running the backend
 -------------------
