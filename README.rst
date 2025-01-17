@@ -17,6 +17,15 @@ Running Scripts
 
 uv run ingest.py --help
 
+Running the frontend
+--------------------
+
+.. code-block:: bash
+
+  cd frontend
+  nvm install
+  nvm use
+
 Running the backend
 -------------------
 
