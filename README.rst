@@ -26,6 +26,9 @@ Running the frontend
   nvm install
   nvm use
 
+  npm install
+
+
 Running the backend
 -------------------
 
