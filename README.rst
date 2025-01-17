@@ -28,6 +28,8 @@ Running the frontend
 
   npm install
 
+  ./generate-client.sh
+
 
 Running the backend
 -------------------
