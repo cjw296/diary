@@ -3,7 +3,7 @@ import { OpenAPI } from "./core/OpenAPI";
 import { request as __request } from "./core/request";
 
 import type {
-	Body_login_access_token_login_access_token_post,
+	Body_login_login_access_token,
 	Token,
 	UserPublic,
 	Message,
@@ -15,33 +15,33 @@ import type {
 } from "./models";
 
 export type LoginData = {
-	LoginAccessTokenLoginAccessTokenPost: {
-		formData: Body_login_access_token_login_access_token_post;
+	LoginAccessToken: {
+		formData: Body_login_login_access_token;
 	};
 };
 
 export type UsersData = {
-	ReadUsersUsersGet: {
+	ReadUsers: {
 		limit?: number;
 		skip?: number;
 	};
-	CreateUserUsersPost: {
+	CreateUser: {
 		requestBody: UserCreate;
 	};
-	UpdateUserMeUsersMePatch: {
+	UpdateUserMe: {
 		requestBody: UserUpdateMe;
 	};
-	UpdatePasswordMeUsersMePasswordPatch: {
+	UpdatePasswordMe: {
 		requestBody: UpdatePassword;
 	};
-	ReadUserByIdUsersUserIdGet: {
+	ReadUserById: {
 		userId: string;
 	};
-	UpdateUserUsersUserIdPatch: {
+	UpdateUser: {
 		requestBody: UserUpdate;
 		userId: string;
 	};
-	DeleteUserUsersUserIdDelete: {
+	DeleteUser: {
 		userId: string;
 	};
 };
@@ -53,8 +53,8 @@ export class LoginService {
 	 * @returns Token Successful Response
 	 * @throws ApiError
 	 */
-	public static loginAccessTokenLoginAccessTokenPost(
-		data: LoginData["LoginAccessTokenLoginAccessTokenPost"],
+	public static loginAccessToken(
+		data: LoginData["LoginAccessToken"],
 	): CancelablePromise<Token> {
 		const { formData } = data;
 		return __request(OpenAPI, {
@@ -74,7 +74,7 @@ export class LoginService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static testTokenLoginTestTokenPost(): CancelablePromise<UserPublic> {
+	public static testToken(): CancelablePromise<UserPublic> {
 		return __request(OpenAPI, {
 			method: "POST",
 			url: "/login/test-token",
@@ -89,8 +89,8 @@ export class UsersService {
 	 * @returns UsersPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static readUsersUsersGet(
-		data: UsersData["ReadUsersUsersGet"] = {},
+	public static readUsers(
+		data: UsersData["ReadUsers"] = {},
 	): CancelablePromise<UsersPublic> {
 		const { skip = 0, limit = 100 } = data;
 		return __request(OpenAPI, {
@@ -112,8 +112,8 @@ export class UsersService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static createUserUsersPost(
-		data: UsersData["CreateUserUsersPost"],
+	public static createUser(
+		data: UsersData["CreateUser"],
 	): CancelablePromise<UserPublic> {
 		const { requestBody } = data;
 		return __request(OpenAPI, {
@@ -133,7 +133,7 @@ export class UsersService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static readUserMeUsersMeGet(): CancelablePromise<UserPublic> {
+	public static readUserMe(): CancelablePromise<UserPublic> {
 		return __request(OpenAPI, {
 			method: "GET",
 			url: "/users/me",
@@ -146,7 +146,7 @@ export class UsersService {
 	 * @returns Message Successful Response
 	 * @throws ApiError
 	 */
-	public static deleteUserMeUsersMeDelete(): CancelablePromise<Message> {
+	public static deleteUserMe(): CancelablePromise<Message> {
 		return __request(OpenAPI, {
 			method: "DELETE",
 			url: "/users/me",
@@ -159,8 +159,8 @@ export class UsersService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static updateUserMeUsersMePatch(
-		data: UsersData["UpdateUserMeUsersMePatch"],
+	public static updateUserMe(
+		data: UsersData["UpdateUserMe"],
 	): CancelablePromise<UserPublic> {
 		const { requestBody } = data;
 		return __request(OpenAPI, {
@@ -180,8 +180,8 @@ export class UsersService {
 	 * @returns Message Successful Response
 	 * @throws ApiError
 	 */
-	public static updatePasswordMeUsersMePasswordPatch(
-		data: UsersData["UpdatePasswordMeUsersMePasswordPatch"],
+	public static updatePasswordMe(
+		data: UsersData["UpdatePasswordMe"],
 	): CancelablePromise<Message> {
 		const { requestBody } = data;
 		return __request(OpenAPI, {
@@ -201,8 +201,8 @@ export class UsersService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static readUserByIdUsersUserIdGet(
-		data: UsersData["ReadUserByIdUsersUserIdGet"],
+	public static readUserById(
+		data: UsersData["ReadUserById"],
 	): CancelablePromise<UserPublic> {
 		const { userId } = data;
 		return __request(OpenAPI, {
@@ -223,8 +223,8 @@ export class UsersService {
 	 * @returns UserPublic Successful Response
 	 * @throws ApiError
 	 */
-	public static updateUserUsersUserIdPatch(
-		data: UsersData["UpdateUserUsersUserIdPatch"],
+	public static updateUser(
+		data: UsersData["UpdateUser"],
 	): CancelablePromise<UserPublic> {
 		const { userId, requestBody } = data;
 		return __request(OpenAPI, {
@@ -247,8 +247,8 @@ export class UsersService {
 	 * @returns Message Successful Response
 	 * @throws ApiError
 	 */
-	public static deleteUserUsersUserIdDelete(
-		data: UsersData["DeleteUserUsersUserIdDelete"],
+	public static deleteUser(
+		data: UsersData["DeleteUser"],
 	): CancelablePromise<Message> {
 		const { userId } = data;
 		return __request(OpenAPI, {
