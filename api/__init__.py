@@ -2,6 +2,7 @@ import os
 from contextlib import asynccontextmanager
 
 from sqlalchemy import create_engine
+from starlette.middleware.cors import CORSMiddleware
 
 from config import read_config
 from fastapi.routing import APIRoute
@@ -36,3 +37,11 @@ app = FastAPI(
 )
 app.include_router(login.router, tags=["login"])
 app.include_router(users.router, prefix="/users", tags=["users"])
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
