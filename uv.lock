@@ -915,14 +915,14 @@ wheels = [
 
 [[package]]
 name = "testservices"
-version = "0.3.0"
+version = "0.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docker" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/88/61/e1bfa6e08950c89ecbd0d91d9a44731efdb1c04036032e0ac4d8981dac0c/testservices-0.3.0.tar.gz", hash = "sha256:c6ce3bb7636c3afba15d213cfb0f3e966872b0612bddad53464d5c005a9abdc7", size = 20777 }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/da/fa681fc585f20454625762ed30b84e44fa2ead008669af19d48e71ecef7d/testservices-0.3.1.tar.gz", hash = "sha256:528f63e6ad7ec47f39c85ab87b6ef91c00d9db39530f4e7dc58b7890853dac69", size = 20853 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/78/9c/548ad55bd3513585f4dd708dd3afb93234b361f62dae4a045537eba3db09/testservices-0.3.0-py3-none-any.whl", hash = "sha256:54121a3745bbcb54b8f1ecdba1ff838ab6af1fd2718a9868faf62100a1c98278", size = 12097 },
+    { url = "https://files.pythonhosted.org/packages/0c/cc/e9a5d87d43ee8f8df4d3ecbd234e96fe410b2cb4cae4f05969c071ef2882/testservices-0.3.1-py3-none-any.whl", hash = "sha256:afdab4c7d7a1bcd3b959b18a1dcec1b7c3b29155225f284edd31bdbc9a125278", size = 12105 },
 ]
 
 [[package]]
