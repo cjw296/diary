@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 from typing import Annotated, Generator
 
 import jwt
 from jwt import InvalidTokenError
 from pydantic import ValidationError
+from sqlalchemy import Engine
 from starlette import status
 
 from config import SECRET_KEY
@@ -16,6 +18,8 @@ from models.user import User
 from sqlmodel import Session
 
 from models import security
+engine: Engine
+
 
 def get_session() -> Generator[Session, None, None]:
     with Session(engine) as session:
