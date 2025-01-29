@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from datetime import date
-from enum import Enum
+from enum import StrEnum
 from typing import Optional
 
 
-class Type(Enum):
+class Type(StrEnum):
     event = 'EVENT'
     did = 'DID'
     didnt = "DIDN'T"
