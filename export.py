@@ -1,24 +1,14 @@
 import html
 from argparse import ArgumentParser
-from datetime import timedelta, date, datetime
+from datetime import date
 from functools import partial
 from pathlib import Path
 from typing import Union
 
 from config import read_config
+from dates import parse_date
 from objects import Period
 from zope import Client, LookBackFailed
-
-SUNDAY = 6
-DAY = timedelta(days=1)
-
-
-def previous_sunday() -> date:
-    current = date.today()
-    current -= DAY
-    while current.weekday() != SUNDAY:
-        current -= DAY
-    return current
 
 
 def handle_error(e: Union[Exception, str], url: str, modified: date) -> bool:
@@ -26,10 +16,6 @@ def handle_error(e: Union[Exception, str], url: str, modified: date) -> bool:
     print(f'{url} at {modified:%a %d %b %y}:', type(e).__qualname__, e)
     print()
     return not isinstance(e, LookBackFailed)
-
-
-def date_from_text(text: str):
-    return datetime.strptime(text, '%Y-%m-%d').date()
 
 
 def dump(path: Path, period: Period):
@@ -47,7 +33,7 @@ def main():
 
     parser = ArgumentParser()
     parser.add_argument('--start-url', default='')
-    parser.add_argument('--start-date', default=date.max, type=date_from_text)
+    parser.add_argument('--start-date', default=date.max, type=parse_date)
     parser.add_argument('--dump', type=Path)
     args = parser.parse_args()
 

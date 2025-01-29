@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, date
 from pathlib import Path
 
 from config import read_config
+from dates import previous_sunday, parse_date
 from export import dump
 from objects import Period
 from parse import parse
@@ -17,22 +18,6 @@ def check_vm_time(client: Client):
         raise RuntimeError(
             f'VM time is {vm_now} but local time is {local_now} ({delta}, please fix!'
         )
-
-
-SUNDAY = 6
-DAY = timedelta(days=1)
-
-
-def previous_sunday() -> date:
-    current = date.today()
-    current -= DAY
-    while current.weekday() != SUNDAY:
-        current -= DAY
-    return current
-
-
-def parse_date(text) -> date:
-    return datetime.strptime(text, '%Y-%m-%d').date()
 
 
 def parse_args() -> Namespace:
