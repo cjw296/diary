@@ -1,8 +1,12 @@
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
 import jwt
 from passlib.context import CryptContext
+
+# https://github.com/pyca/bcrypt/issues/684
+logging.getLogger('passlib').setLevel(logging.ERROR)
 
 from config import SECRET_KEY
 
