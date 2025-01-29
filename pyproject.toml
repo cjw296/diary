@@ -8,6 +8,7 @@ requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.13.3",
     "beautifulsoup4>=4.12.3",
+    "click>=8.1.7",
     "configurator>=3.2.0",
     "fastapi[standard]>=0.115.6",
     "lark>=1.2.2",

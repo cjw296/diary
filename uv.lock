@@ -230,6 +230,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "alembic" },
     { name = "beautifulsoup4" },
+    { name = "click" },
     { name = "configurator" },
     { name = "fastapi", extra = ["standard"] },
     { name = "lark" },
@@ -256,6 +257,7 @@ dev = [
 requires-dist = [
     { name = "alembic", specifier = ">=1.13.3" },
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
+    { name = "click", specifier = ">=8.1.7" },
     { name = "configurator", specifier = ">=3.2.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.115.6" },
     { name = "lark", specifier = ">=1.2.2" },
