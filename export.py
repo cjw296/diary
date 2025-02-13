@@ -18,13 +18,16 @@ def handle_error(e: Union[Exception, str], url: str, modified: date) -> bool:
     return not isinstance(e, LookBackFailed)
 
 
-def dump(path: Path, period: Period):
+def dump(path: Path, period: Period, dry_run: bool):
     year = str(period.start.year)
     month = f'{period.start.month:02}'
     day = f'{period.start.day:02}.txt'
-    container = path / year / month
-    container.mkdir(exist_ok=True, parents=True)
-    (container / day).write_text(str(period))
+    day_path = path / year / month / day
+    content = str(period)
+    container = day_path.parent
+    if not dry_run:
+        container.mkdir(exist_ok=True, parents=True)
+        day_path.write_text(content)
 
 
 def main():
@@ -35,6 +38,7 @@ def main():
     parser.add_argument('--start-url', default='')
     parser.add_argument('--start-date', default=date.max, type=parse_date)
     parser.add_argument('--dump', type=Path)
+    parser.add_argument('--dry-run', action='store_true')
     args = parser.parse_args()
 
     try:
@@ -75,7 +79,7 @@ def main():
             print(period)
 
             if args.dump:
-                dump(args.dump.expanduser(), period)
+                dump(args.dump.expanduser(), period, args.dry_run)
 
             previous = period.start
     except KeyboardInterrupt:

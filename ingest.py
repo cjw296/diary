@@ -46,7 +46,7 @@ def main():
     dump_path = Path(config.dump).expanduser()
 
     for day in days:
-        dump(dump_path, day)
+        dump(dump_path, day, dry_run=False)
         if not day.summary().strip():
             print(f'Skipping {day.human_date()} as empty')
             continue
