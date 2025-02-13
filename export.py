@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--start-date', default=date.max, type=parse_date)
     parser.add_argument('--dump', type=Path)
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--quiet', action='store_true')
     args = parser.parse_args()
 
     try:
@@ -48,11 +49,12 @@ def main():
             to_previous = previous and (previous - latest).days or None
             to_modified = (period.modified - latest).days
 
-            print(f'{period.human_date()} {period.start.year} ',
-                  f'prev: {to_previous} days',
-                  f'pub: {to_modified} days',
-                  f'python export.py '
-                  f'--start-url {period.start_url} --start-date {period.start_date}')
+            if not args.quiet:
+                print(f'{period.human_date()} {period.start.year} ',
+                      f'prev: {to_previous} days',
+                      f'pub: {to_modified} days',
+                      f'python export.py '
+                      f'--start-url {period.start_url} --start-date {period.start_date}')
 
             error = partial(handle_error,
                             url=f'{zope.url}/{period.zope_id}',
@@ -66,8 +68,9 @@ def main():
                 break
 
             edit_url = f'{zope.url}/{period.zope_id}/manage'
-            print(edit_url)
-            print()
+            if not args.quiet:
+                print(edit_url)
+                print()
             soup = zope.get_soup(edit_url, absolute=True)
             summary_tag, = soup.find_all('textarea', attrs={'name': 'summary'})
             body_tag, = soup.find_all('textarea', attrs={'name': 'body'})
@@ -76,7 +79,8 @@ def main():
                 period, html.unescape(summary_tag.text), body_tag.text, period.modified
             )
 
-            print(period)
+            if not args.quiet:
+                print(period)
 
             if args.dump:
                 dump(args.dump.expanduser(), period, args.dry_run)
