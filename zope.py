@@ -49,7 +49,8 @@ class Client:
         return self.request('get', uri, absolute)
 
     def get_soup(self, uri: str, absolute: bool = False) -> BeautifulSoup:
-        return BeautifulSoup(self.get(uri, absolute).content, features="html.parser")
+        content = self.get(uri, absolute).content.decode('latin-1')
+        return BeautifulSoup(content, features="html.parser")
 
     def post(self, uri: str, data: dict[str, str]) -> Response:
         return self.request('post', uri, data=data)
