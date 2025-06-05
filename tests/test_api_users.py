@@ -72,6 +72,7 @@ def test_create_user_new_email(client: TestClient, superuser_headers, session: S
         json={"email": username, "password": random_lower_string()},
     )
     user = User.by_email(session, email=r.json()["email"])
+    assert user is not None
     check_response(
         r,
         {

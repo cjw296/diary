@@ -84,8 +84,8 @@ class Client:
         text: str,
         day_name: str,
         day_number_text: str,
-        month_name: Optional[str],
-        year_text: Optional[str],
+        month_name: str | None,
+        year_text: str | None,
         *,
         max_days: int,
     ):
@@ -118,21 +118,21 @@ class Client:
         return possible
 
     @classmethod
-    def infer_date(cls, text: str, previous: date = None):
+    def infer_date(cls, text: str, previous: date | None = None):
         text = text.strip()
         try:
             inferred = datetime.strptime(text, DATE_FORMAT).date()
         except ValueError:
             match = DAY_RANGE_PATTERN.match(text)
             if not match:
-                if text in calendar.day_name:
+                if text in calendar.day_name and previous is not None:
                     for i in range(1, 5):
                         possible = previous - timedelta(days=i)
                         if possible.strftime('%A') == text:
                             return possible, None
                 raise ValueError(f'Bad format: {text!r}')
             name, day, month, year, end_name, end_day, end_month, end_year = match.groups()
-            if end_day:
+            if end_day and previous is not None:
                 end = cls.lookback(
                     previous, text, end_name, end_day, end_month, end_year, max_days=5
                 )
@@ -142,6 +142,8 @@ class Client:
                     start = cls.lookback(end, text, name, day, month, year, max_days=25)
                 return start, end
             else:
+                if previous is None:
+                    raise ValueError(f'Need previous date for: {text!r}')
                 inferred = cls.lookback(previous, text, name, day, month, year, max_days=5)
         else:
             formatted = inferred.strftime(DATE_FORMAT)
@@ -151,7 +153,7 @@ class Client:
     def list(
         self,
         earliest: date,
-        handle_error: Callable[[Exception, str, date], bool] = lambda e: False,
+        handle_error: Callable[[Exception, str, date], bool] = lambda e, url, dt: False,
         next_url: str = '',
         seen: date = date.max,
     ) -> Iterable[Period]:
@@ -182,13 +184,16 @@ class Client:
                     modified=modified.date(),
                 )
 
-            next_link = soup.html.find_next('a', attrs={'class': 'next'})
+            next_link = soup.html.find_next('a', attrs={'class': 'next'}) if soup.html else None
             if next_link is None:
                 return
-            next_url = next_link['href']
+            href = next_link.get('href') if hasattr(next_link, 'get') else None
+            if href is None:
+                return
+            next_url = str(href)
 
     @staticmethod
-    def add_stuff(period: Period, summary: str, body: str, modified: date = None) -> Period:
+    def add_stuff(period: Period, summary: str, body: str, modified: date | None = None) -> Period:
         # remove leading and trailing whitespace
         summary = summary.strip()
         if modified is None or modified >= date(2002, 10, 4):
@@ -230,5 +235,5 @@ class Client:
             if line is None:
                 raise
             before = '\n'.join(source.split('\n')[:line])
-            pointer = ' ' * (e.column - 1) + '^'
+            pointer = ' ' * (getattr(e, 'column', 1) - 1) + '^'
             raise ValueError(f'\n{e}\n\n{before}\n{pointer}') from None

@@ -19,10 +19,11 @@ from sqlmodel import Session
 
 from models import security
 
-engine: Engine
+engine: Engine | None = None
 
 
 def get_session() -> Generator[Session, None, None]:
+    assert engine is not None, "Engine not initialized"
     with Session(engine) as session:
         yield session
 
