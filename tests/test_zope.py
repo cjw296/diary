@@ -6,7 +6,7 @@ import pytest
 import responses
 from bs4 import BeautifulSoup
 from requests import HTTPError
-from testfixtures import compare, ShouldRaise
+from testfixtures import compare, ShouldRaise, replace_in_module
 
 from objects import Period, Stuff, Type
 from zope import Client, LookBackFailed
@@ -635,23 +635,20 @@ class TestClientAddStuff:
         summary = "EVENT Test"
         body = ""
 
-        # Temporarily replace parse function to simulate parse error with line info
-        original_parse = Client.add_stuff.__globals__['parse']
-        
+        # Create mock parse function that simulates parse error with line info
         def mock_parse_with_line_info(source):
             error = Exception("Simulated parse error")
             error.line = 2
             error.column = 5
             raise error
 
-        Client.add_stuff.__globals__['parse'] = mock_parse_with_line_info
-
-        try:
+        # Use testfixtures replace_in_module to cleanly replace the parse function
+        # Since parse is imported as 'from parse import parse', we need to replace it
+        # in the zope module where it's used
+        import zope
+        with replace_in_module(zope.parse, mock_parse_with_line_info, module=zope):
             with ShouldRaise(ValueError):  # Should format error with line pointer
                 Client.add_stuff(period, summary, body)
-        finally:
-            # Always restore original function
-            Client.add_stuff.__globals__['parse'] = original_parse
 
 
 class TestLookBackFailed:
