@@ -98,6 +98,45 @@ The application parses a custom text-based diary format defined in `diary.lark`.
 - `tests/conftest.py` - Test fixtures with superuser and normal user setups
 - `alembic/` - Database migration files
 
+## Testing Standards
+
+### Test Structure
+- **Use pytest fixtures instead of `setup_method`**: Create reusable fixtures for common test objects
+- **Leverage fixture-based mocking**: Use pytest fixtures for external dependencies (e.g., `mocked_responses` for HTTP mocking)
+- **Avoid complex function mocking**: Prefer real error-generating content over monkey-patching. If mocking is unavoidable, provide detailed documentation explaining why
+
+### Assertions and Error Testing
+- **Use `testfixtures.compare()` for equality assertions**: Provides better diff output than bare `assert` statements
+  ```python
+  # Preferred
+  compare(result, expected={'key': 'value'})
+  compare(periods, expected=[Period(start=date(2023, 1, 15), ...)])
+  
+  # Instead of
+  assert result == {'key': 'value'}
+  ```
+
+- **Use `testfixtures.ShouldRaise()` for exception testing**: More descriptive than `pytest.raises`
+  ```python
+  # Preferred  
+  with ShouldRaise(ValueError("Specific error message")):
+      function_that_should_fail()
+      
+  # Instead of
+  with pytest.raises(ValueError, match="Specific error message"):
+      function_that_should_fail()
+  ```
+
+### HTTP Testing
+- **Use `responses` library via fixtures**: Mock HTTP interactions cleanly without decorators
+- **Verify authentication data**: Always check that HTTP Basic Auth credentials are passed correctly
+- **Test both success and error scenarios**: Include status code validation and error handling
+
+### Coverage Goals
+- **Aim for 100% code coverage** on new modules
+- **Test edge cases and error paths**: Include boundary conditions and exception handling
+- **Document any untestable code**: If certain code paths cannot be tested, explain why in comments
+
 ## Testing Notes
 - Tests use PostgreSQL containers via testservices
 - Session-scoped fixtures create superuser and normal user for API testing
