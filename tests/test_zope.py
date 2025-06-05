@@ -6,7 +6,7 @@ import pytest
 import responses
 from bs4 import BeautifulSoup
 from requests import HTTPError
-from testfixtures import compare
+from testfixtures import compare, ShouldRaise
 
 from objects import Period, Stuff, Type
 from zope import Client, LookBackFailed
@@ -60,7 +60,7 @@ class TestClient:
     def test_request_raises_for_status(self, client, mocked_responses):
         mocked_responses.add(responses.GET, "https://example.com/test", body="error", status=404)
 
-        with pytest.raises(HTTPError):
+        with ShouldRaise(HTTPError):
             client.request("get", "/test")
 
     def test_get(self, client, mocked_responses):
@@ -127,7 +127,7 @@ class TestClient:
         stuff = Stuff(Type.event, "Test with emoji 😀")
         period.stuff = [stuff]
 
-        with pytest.raises(Exception, match="'latin-1' codec can't encode character"):
+        with ShouldRaise(Exception("'latin-1' codec can't encode character '😀' in position 14: ordinal not in range(256)")):
             client._post_data(period)
 
     def test_add(self, client, mocked_responses):
@@ -158,7 +158,7 @@ class TestClient:
     def test_update_without_zope_id(self, client):
         period = Period(start=date(2023, 1, 15))
 
-        with pytest.raises(AssertionError):
+        with ShouldRaise(AssertionError):
             client.update(period)
 
 
@@ -169,7 +169,7 @@ class TestClientInferDate:
         assert end is None
 
     def test_infer_date_format_mismatch(self):
-        with pytest.raises(AssertionError, match="was a Sunday, got"):
+        with ShouldRaise(AssertionError("15 Jan 23 was a Sunday, got: (2023-01-15) Monday")):
             Client.infer_date("(2023-01-15) Monday")
 
     def test_infer_date_day_name_only_with_previous(self):
@@ -193,7 +193,7 @@ class TestClientInferDate:
 
     def test_infer_date_single_day_with_previous(self):
         previous = date(2023, 1, 20)
-        with pytest.raises(LookBackFailed):
+        with ShouldRaise(LookBackFailed):
             Client.infer_date("15", previous)
 
     def test_infer_date_single_day_without_previous(self):
@@ -215,13 +215,13 @@ class TestClientInferDate:
     def test_infer_date_range_with_end_day(self):
         previous = date(2023, 1, 20)
         # These patterns cause TypeError in lookback due to None day_number
-        with pytest.raises(TypeError):
+        with ShouldRaise(TypeError):
             Client.infer_date("15 - 17", previous)
 
     def test_infer_date_range_with_to(self):
         previous = date(2023, 1, 20)
         # These patterns cause TypeError in lookback due to None day_number
-        with pytest.raises(TypeError):
+        with ShouldRaise(TypeError):
             Client.infer_date("15 to 17", previous)
 
     def test_infer_date_range_full_dates(self):
