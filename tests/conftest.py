@@ -6,7 +6,8 @@ from uuid import UUID
 import pytest
 from sqlalchemy import Engine, create_engine, Connection
 from starlette.testclient import TestClient
-from testservices.services.databases import PostgresContainer
+from testservices.provider import Provider
+from testservices.services.databases import PostgresContainer, Database, DatabaseFromEnvironment
 
 from api import app
 from api.deps import get_session
@@ -28,9 +29,15 @@ def client() -> Iterable[TestClient]:
         yield c
 
 
+database_provider = Provider[Database](
+    DatabaseFromEnvironment(timeout=300),
+    PostgresContainer(),
+)
+
+
 @pytest.fixture(scope='session')
 def alembic_engine() -> Iterable[Engine]:
-    with PostgresContainer() as database:
+    with database_provider as database:
         yield create_engine(database.url)
 
 
