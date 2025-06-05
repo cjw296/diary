@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install '.[dev]'
+
+      - name: Run tests with coverage
+        id: test
+        run: |
+          pytest --cov=. --cov-report=xml --cov-report=term
+          echo "coverage=$(coverage report | awk 'END{print $4}' | tr -d '%')" >> "$GITHUB_OUTPUT"
+
+      - name: Collect base coverage
+        if: github.event_name == 'pull_request'
+        id: base
+        run: |
+          git fetch origin ${{ github.event.pull_request.base.sha }}
+          git worktree add base ${{ github.event.pull_request.base.sha }}
+          cd base
+          python -m pip install --upgrade pip
+          pip install '.[dev]'
+          pytest --cov=. --cov-report=term
+          echo "coverage=$(coverage report | awk 'END{print $4}' | tr -d '%')" >> "$GITHUB_OUTPUT"
+          cd ..
+          git worktree remove base
+
+      - name: Check coverage
+        run: |
+          python - <<'PY'
+          import os, sys
+          pr = float(os.environ['PR_COVERAGE'])
+          base = os.environ.get('BASE_COVERAGE')
+          threshold = float(base) if base is not None else 100.0
+          if pr < threshold:
+              print(f"Coverage {pr}% is below required {threshold}%")
+              sys.exit(1)
+          PY
+        env:
+          PR_COVERAGE: ${{ steps.test.outputs.coverage }}
+          BASE_COVERAGE: ${{ steps.base.outputs.coverage }}
+
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage.xml
