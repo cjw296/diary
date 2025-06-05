@@ -2,7 +2,7 @@ from datetime import date
 
 from testfixtures import compare, ShouldRaise
 
-from objects import Stuff, Type, Period
+from objects import Stuff, Type, Period, text_to_type
 
 
 def test_only_start():
@@ -127,3 +127,16 @@ def test_human_date_start_and_end_serialized():
         Period(date(2020, 2, 1), end=date(2020, 2, 3)).human_date(),
         expected='Sat 01 Feb to Mon 03 Feb',
     )
+
+
+def test_text_to_type_valid():
+    compare(text_to_type('EVENT'), expected=Type.event)
+
+
+def test_text_to_type_synonym():
+    compare(text_to_type('EVEN'), expected=Type.event)
+
+
+def test_text_to_type_invalid():
+    with ShouldRaise(ValueError):
+        text_to_type('INVALID_TYPE')

@@ -752,3 +752,10 @@ class TestAddStuff:
                 ],
             ),
         )
+
+
+def test_date_day_mismatch():
+    from lark.exceptions import VisitError
+
+    with ShouldRaise(VisitError):
+        parse("(2021-11-03) Tuesday\n======================\n")
