@@ -34,6 +34,7 @@ dev = [
     "types-beautifulsoup4>=4.12.0",
     "types-requests>=2.32.0",
     "types-passlib>=1.7.0",
+    "responses>=0.25.0",
 ]
 
 [tool.ruff]

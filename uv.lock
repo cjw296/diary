@@ -251,6 +251,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-alembic" },
     { name = "pytest-cov" },
+    { name = "responses" },
     { name = "ruff" },
     { name = "testfixtures" },
     { name = "testservices" },
@@ -283,6 +284,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.3" },
     { name = "pytest-alembic", specifier = ">=0.11.1" },
     { name = "pytest-cov", specifier = ">=6.1.1" },
+    { name = "responses", specifier = ">=0.25.0" },
     { name = "ruff", specifier = ">=0.11.12" },
     { name = "testfixtures", specifier = ">=8.3.0" },
     { name = "testservices", specifier = ">=0.3.0" },
@@ -856,6 +858,20 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/63/70/2bf7780ad2d390a8d301ad0b550f1581eadbd9a20f896afe06353c2a2913/requests-2.32.3.tar.gz", hash = "sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760", size = 131218, upload_time = "2024-05-29T15:37:49.536Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f9/9b/335f9764261e915ed497fcdeb11df5dfd6f7bf257d4a6a2a686d80da4d54/requests-2.32.3-py3-none-any.whl", hash = "sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6", size = 64928, upload_time = "2024-05-29T15:37:47.027Z" },
+]
+
+[[package]]
+name = "responses"
+version = "0.25.7"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/81/7e/2345ac3299bd62bd7163216702bbc88976c099cfceba5b889f2a457727a1/responses-0.25.7.tar.gz", hash = "sha256:8ebae11405d7a5df79ab6fd54277f6f2bc29b2d002d0dd2d5c632594d1ddcedb", size = 79203, upload_time = "2025-03-11T15:36:16.624Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e4/fc/1d20b64fa90e81e4fa0a34c9b0240a6cfb1326b7e06d18a5432a9917c316/responses-0.25.7-py3-none-any.whl", hash = "sha256:92ca17416c90fe6b35921f52179bff29332076bb32694c0df02dcac2c6bc043c", size = 34732, upload_time = "2025-03-11T15:36:14.589Z" },
 ]
 
 [[package]]
