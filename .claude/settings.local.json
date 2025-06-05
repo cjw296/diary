@@ -4,7 +4,8 @@
       "Bash(uv run:*)",
       "Bash(uv sync:*)",
       "Bash(uv run pytest:*)",
-      "Bash(uv run coverage:*)"
+      "Bash(uv run coverage:*)",
+      "Bash(uv add:*)"
     ],
     "deny": []
   }
