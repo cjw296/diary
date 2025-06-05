@@ -11,21 +11,24 @@ from objects import Period, Stuff, Type
 from zope import Client, LookBackFailed
 
 
-class TestClient:
-    def setup_method(self):
-        self.client = Client(url="https://example.com", username="testuser", password="testpass")
+@pytest.fixture
+def client():
+    return Client(url="https://example.com", username="testuser", password="testpass")
 
-    def test_init(self):
-        assert self.client.url == "https://example.com"
-        assert self.client.username == "testuser"
-        assert self.client.password == "testpass"
-        assert self.client.session.auth == ("testuser", "testpass")
+
+class TestClient:
+
+    def test_init(self, client):
+        assert client.url == "https://example.com"
+        assert client.username == "testuser"
+        assert client.password == "testpass"
+        assert client.session.auth == ("testuser", "testpass")
 
     @responses.activate
-    def test_request_relative_url(self):
+    def test_request_relative_url(self, client):
         responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
-        result = self.client.request("get", "/test")
+        result = client.request("get", "/test")
         assert result.text == "success"
         assert len(responses.calls) == 1
         request = responses.calls[0].request
@@ -33,46 +36,46 @@ class TestClient:
         assert "Authorization" in request.headers
 
     @responses.activate
-    def test_request_absolute_url(self):
+    def test_request_absolute_url(self, client):
         responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
-        result = self.client.request("get", "https://other.com/test", absolute=True)
+        result = client.request("get", "https://other.com/test", absolute=True)
         assert result.text == "success"
         assert len(responses.calls) == 1
         request = responses.calls[0].request
         assert request.url == "https://other.com/test"
 
     @responses.activate
-    def test_request_with_kwargs(self):
+    def test_request_with_kwargs(self, client):
         responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
-        result = self.client.request("post", "/test", json={"key": "value"})
+        result = client.request("post", "/test", json={"key": "value"})
         assert result.text == "success"
         assert len(responses.calls) == 1
 
     @responses.activate
-    def test_request_raises_for_status(self):
+    def test_request_raises_for_status(self, client):
         responses.add(responses.GET, "https://example.com/test", body="error", status=404)
 
         with pytest.raises(HTTPError):
-            self.client.request("get", "/test")
+            client.request("get", "/test")
 
     @responses.activate
-    def test_get(self):
+    def test_get(self, client):
         responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
-        result = self.client.get("/test")
+        result = client.get("/test")
         assert result.text == "success"
 
     @responses.activate
-    def test_get_absolute(self):
+    def test_get_absolute(self, client):
         responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
-        result = self.client.get("https://other.com/test", absolute=True)
+        result = client.get("https://other.com/test", absolute=True)
         assert result.text == "success"
 
     @responses.activate
-    def test_get_soup(self):
+    def test_get_soup(self, client):
         html_content = '<html><body><h1>Test</h1></body></html>'
         responses.add(
             responses.GET,
@@ -81,36 +84,36 @@ class TestClient:
             status=200,
         )
 
-        soup = self.client.get_soup("/test")
+        soup = client.get_soup("/test")
         assert isinstance(soup, BeautifulSoup)
         assert soup.find('h1').text == "Test"
 
     @responses.activate
-    def test_get_soup_absolute(self):
+    def test_get_soup_absolute(self, client):
         html_content = '<html><body><h1>Test</h1></body></html>'
         responses.add(
             responses.GET, "https://other.com/test", body=html_content.encode('latin-1'), status=200
         )
 
-        soup = self.client.get_soup("https://other.com/test", absolute=True)
+        soup = client.get_soup("https://other.com/test", absolute=True)
         assert isinstance(soup, BeautifulSoup)
         assert soup.find('h1').text == "Test"
 
     @responses.activate
-    def test_post(self):
+    def test_post(self, client):
         responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
-        result = self.client.post("/test", {"key": "value"})
+        result = client.post("/test", {"key": "value"})
         assert result.text == "success"
         assert len(responses.calls) == 1
         request = responses.calls[0].request
         assert "key=value" in request.body
 
-    def test_post_data_basic(self):
+    def test_post_data_basic(self, client):
         period = Period(start=date(2023, 1, 15))
         period.stuff = [Stuff(Type.event, "Test event")]
 
-        data = self.client._post_data(period)
+        data = client._post_data(period)
 
         assert data['title'] == "(2023-01-15) Sunday"
         assert data['author'] == "-"
@@ -118,47 +121,47 @@ class TestClient:
         assert data['encoding'] == "Plain"
         assert data['addPosting:method'] == " Add "
 
-    def test_post_data_unicode_error(self):
+    def test_post_data_unicode_error(self, client):
         period = Period(start=date(2023, 1, 15))
         # Create a Stuff with content that can't be encoded in latin-1
         stuff = Stuff(Type.event, "Test with emoji 😀")
         period.stuff = [stuff]
 
         with pytest.raises(Exception, match="'latin-1' codec can't encode character"):
-            self.client._post_data(period)
+            client._post_data(period)
 
     @responses.activate
-    def test_add(self):
+    def test_add(self, client):
         responses.add(responses.POST, "https://example.com", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15))
         period.stuff = [Stuff(Type.event, "Test event")]
 
-        self.client.add(period)
+        client.add(period)
 
         assert len(responses.calls) == 1
         request = responses.calls[0].request
         assert "addPosting%3Amethod=+Add+" in request.body
 
     @responses.activate
-    def test_update(self):
+    def test_update(self, client):
         responses.add(responses.POST, "https://example.com/123", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15), zope_id="123")
         period.stuff = [Stuff(Type.event, "Updated event")]
 
-        self.client.update(period)
+        client.update(period)
 
         assert len(responses.calls) == 1
         request = responses.calls[0].request
         assert request.url == "https://example.com/123"
         assert "edit%3Amethod=Change" in request.body
 
-    def test_update_without_zope_id(self):
+    def test_update_without_zope_id(self, client):
         period = Period(start=date(2023, 1, 15))
 
         with pytest.raises(AssertionError):
-            self.client.update(period)
+            client.update(period)
 
 
 class TestClientInferDate:
