@@ -45,6 +45,7 @@ def override_get_session(session: Session) -> Iterator[None]:
 
 Headers: type = dict[str, str]
 
+
 @dataclass
 class SessionFixtures:
     engine: Engine
