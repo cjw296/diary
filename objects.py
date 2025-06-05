@@ -58,7 +58,7 @@ class Stuff:
         tags = ''.join(f':{tag}' for tag in (self.tags or ()))
         text = f'{self.type.value}{tags} {self.title.strip()}'
         if self.body:
-            body = self.body if self.body.endswith('\n') else self.body+'\n'
+            body = self.body if self.body.endswith('\n') else self.body + '\n'
             text += f':\n--\n{body}--'
         return text
 
@@ -87,7 +87,7 @@ class Period:
     def _date(self, format):
         text = self.start.strftime(format)
         if self.end:
-            text += self.end.strftime(' to '+format)
+            text += self.end.strftime(' to ' + format)
         return text
 
     def human_date(self):
@@ -101,7 +101,7 @@ class Period:
 
     def __str__(self):
         header = self.title_date()
-        parts = [header, '='*len(header)]
+        parts = [header, '=' * len(header)]
         summary = self.summary()
         if summary:
             parts.append(summary)

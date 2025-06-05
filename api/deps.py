@@ -18,6 +18,7 @@ from models.user import User
 from sqlmodel import Session
 
 from models import security
+
 engine: Engine
 
 
@@ -26,16 +27,12 @@ def get_session() -> Generator[Session, None, None]:
         yield session
 
 
-reusable_oauth2 = OAuth2PasswordBearer(
-    tokenUrl="/login/access-token"
-)
+reusable_oauth2 = OAuth2PasswordBearer(tokenUrl="/login/access-token")
 
 
 def get_current_user(session: SessionDep, token: TokenDep) -> User:
     try:
-        payload = jwt.decode(
-            token, SECRET_KEY, algorithms=[security.ALGORITHM]
-        )
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[security.ALGORITHM])
         token_data = TokenPayload(**payload)
     except (InvalidTokenError, ValidationError):
         raise HTTPException(
@@ -52,9 +49,7 @@ def get_current_user(session: SessionDep, token: TokenDep) -> User:
 
 def get_current_active_superuser(current_user: CurrentUser) -> User:
     if not current_user.is_superuser:
-        raise HTTPException(
-            status_code=403, detail="The user doesn't have enough privileges"
-        )
+        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
     return current_user
 
 

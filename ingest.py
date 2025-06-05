@@ -13,7 +13,7 @@ from zope import Client
 def check_vm_time(client: Client):
     vm_now = datetime.strptime(client.get('/vm_now').text, '%Y-%m-%dT%H:%M:%S\n')
     local_now = datetime.now()
-    delta = abs(local_now-vm_now)
+    delta = abs(local_now - vm_now)
     if delta > timedelta(seconds=5):
         raise RuntimeError(
             f'VM time is {vm_now} but local time is {local_now} ({delta}, please fix!'
@@ -40,8 +40,9 @@ def main():
         diff = (d1.date - d.date).days
         assert diff == 1, f"{d.human_date()} to {d1.human_date()} was {diff} days, not 1!"
 
-    already_uploaded = {day.date: day.zope_id
-                        for day in client.list(days[0].date - timedelta(days=3))}
+    already_uploaded = {
+        day.date: day.zope_id for day in client.list(days[0].date - timedelta(days=3))
+    }
 
     dump_path = Path(config.dump).expanduser()
 
