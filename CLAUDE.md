@@ -30,6 +30,9 @@ uv run pytest
 uv run pytest tests/test_specific.py  # Run specific test file
 uv run pytest -k "test_name"         # Run specific test
 
+# Check code coverage
+uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing
+
 # Code formatting
 uv run black .
 ```
