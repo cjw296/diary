@@ -21,8 +21,8 @@ dependencies = [
     "sqlmodel>=0.0.22",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=8.3.3",
     "pytest-cov>=5.0.0",
     "testfixtures>=8.3.0",
