@@ -38,12 +38,12 @@ def alembic_engine() -> Iterable[Engine]:
 def override_get_session(session: Session) -> Iterator[None]:
     app.dependency_overrides[get_session] = lambda: session
     try:
-        yield session
+        yield
     finally:
         app.dependency_overrides.pop(get_session)
 
 
-Headers: type = dict[str, str]
+type Headers = dict[str, str]
 
 
 @dataclass
