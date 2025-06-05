@@ -6,6 +6,7 @@ import pytest
 import responses
 from bs4 import BeautifulSoup
 from requests import HTTPError
+from testfixtures import compare
 
 from objects import Period, Stuff, Type
 from zope import Client, LookBackFailed
@@ -25,20 +26,20 @@ def mocked_responses():
 class TestClient:
 
     def test_init(self, client):
-        assert client.url == "https://example.com"
-        assert client.username == "testuser"
-        assert client.password == "testpass"
-        assert client.session.auth == ("testuser", "testpass")
+        compare(client.url, expected="https://example.com")
+        compare(client.username, expected="testuser")
+        compare(client.password, expected="testpass")
+        compare(client.session.auth, expected=("testuser", "testpass"))
 
     def test_request_relative_url(self, client, mocked_responses):
         mocked_responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
         result = client.request("get", "/test")
-        assert result.text == "success"
-        assert len(mocked_responses.calls) == 1
+        compare(result.text, expected="success")
+        compare(len(mocked_responses.calls), expected=1)
         request = mocked_responses.calls[0].request
-        assert request.url == "https://example.com/test"
-        assert "Authorization" in request.headers
+        compare(request.url, expected="https://example.com/test")
+        assert "Authorization" in request.headers  # Keep this as assert for membership test
 
     def test_request_absolute_url(self, client, mocked_responses):
         mocked_responses.add(responses.GET, "https://other.com/test", body="success", status=200)
@@ -112,11 +113,13 @@ class TestClient:
 
         data = client._post_data(period)
 
-        assert data['title'] == "(2023-01-15) Sunday"
-        assert data['author'] == "-"
-        assert data['summary'] == b"EVENT Test event"
-        assert data['encoding'] == "Plain"
-        assert data['addPosting:method'] == " Add "
+        compare(data, expected={
+            'title': "(2023-01-15) Sunday",
+            'author': "-",
+            'summary': b"EVENT Test event",
+            'encoding': "Plain",
+            'addPosting:method': " Add "
+        })
 
     def test_post_data_unicode_error(self, client):
         period = Period(start=date(2023, 1, 15))
@@ -309,12 +312,14 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 1
-        period = periods[0]
-        assert period.start == date(2023, 1, 15)
-        assert period.end is None
-        assert period.zope_id == "123"
-        assert period.modified == date(2023, 1, 15)
+        compare(periods, expected=[Period(
+            start=date(2023, 1, 15),
+            end=None,
+            zope_id="123",
+            start_url="",
+            start_date=date.max,
+            modified=date(2023, 1, 15)
+        )])
 
     def test_list_with_pagination(self, mocked_responses):
         html_content1 = '''
@@ -558,8 +563,8 @@ class TestClientAddStuff:
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
         # The lowercase "didn't" gets converted to "DIDN't " which then becomes an event
-        assert result.stuff[0].type == Type.event
-        assert result.stuff[0].title == "DIDN'T finish task"
+        compare(result.stuff[0].type, expected=Type.event)
+        compare(result.stuff[0].title, expected="DIDN'T finish task")
 
     def test_add_stuff_initial_text_becomes_event(self):
         period = Period(start=date(2023, 1, 15))
