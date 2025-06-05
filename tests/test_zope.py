@@ -16,6 +16,12 @@ def client():
     return Client(url="https://example.com", username="testuser", password="testpass")
 
 
+@pytest.fixture
+def mocked_responses():
+    with responses.RequestsMock() as rsps:
+        yield rsps
+
+
 class TestClient:
 
     def test_init(self, client):
@@ -24,60 +30,53 @@ class TestClient:
         assert client.password == "testpass"
         assert client.session.auth == ("testuser", "testpass")
 
-    @responses.activate
-    def test_request_relative_url(self, client):
-        responses.add(responses.GET, "https://example.com/test", body="success", status=200)
+    def test_request_relative_url(self, client, mocked_responses):
+        mocked_responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
         result = client.request("get", "/test")
         assert result.text == "success"
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        assert len(mocked_responses.calls) == 1
+        request = mocked_responses.calls[0].request
         assert request.url == "https://example.com/test"
         assert "Authorization" in request.headers
 
-    @responses.activate
-    def test_request_absolute_url(self, client):
-        responses.add(responses.GET, "https://other.com/test", body="success", status=200)
+    def test_request_absolute_url(self, client, mocked_responses):
+        mocked_responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
         result = client.request("get", "https://other.com/test", absolute=True)
         assert result.text == "success"
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        assert len(mocked_responses.calls) == 1
+        request = mocked_responses.calls[0].request
         assert request.url == "https://other.com/test"
 
-    @responses.activate
-    def test_request_with_kwargs(self, client):
-        responses.add(responses.POST, "https://example.com/test", body="success", status=200)
+    def test_request_with_kwargs(self, client, mocked_responses):
+        mocked_responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
         result = client.request("post", "/test", json={"key": "value"})
         assert result.text == "success"
-        assert len(responses.calls) == 1
+        assert len(mocked_responses.calls) == 1
 
-    @responses.activate
-    def test_request_raises_for_status(self, client):
-        responses.add(responses.GET, "https://example.com/test", body="error", status=404)
+    def test_request_raises_for_status(self, client, mocked_responses):
+        mocked_responses.add(responses.GET, "https://example.com/test", body="error", status=404)
 
         with pytest.raises(HTTPError):
             client.request("get", "/test")
 
-    @responses.activate
-    def test_get(self, client):
-        responses.add(responses.GET, "https://example.com/test", body="success", status=200)
+    def test_get(self, client, mocked_responses):
+        mocked_responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
         result = client.get("/test")
         assert result.text == "success"
 
-    @responses.activate
-    def test_get_absolute(self, client):
-        responses.add(responses.GET, "https://other.com/test", body="success", status=200)
+    def test_get_absolute(self, client, mocked_responses):
+        mocked_responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
         result = client.get("https://other.com/test", absolute=True)
         assert result.text == "success"
 
-    @responses.activate
-    def test_get_soup(self, client):
+    def test_get_soup(self, client, mocked_responses):
         html_content = '<html><body><h1>Test</h1></body></html>'
-        responses.add(
+        mocked_responses.add(
             responses.GET,
             "https://example.com/test",
             body=html_content.encode('latin-1'),
@@ -88,10 +87,9 @@ class TestClient:
         assert isinstance(soup, BeautifulSoup)
         assert soup.find('h1').text == "Test"
 
-    @responses.activate
-    def test_get_soup_absolute(self, client):
+    def test_get_soup_absolute(self, client, mocked_responses):
         html_content = '<html><body><h1>Test</h1></body></html>'
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://other.com/test", body=html_content.encode('latin-1'), status=200
         )
 
@@ -99,14 +97,13 @@ class TestClient:
         assert isinstance(soup, BeautifulSoup)
         assert soup.find('h1').text == "Test"
 
-    @responses.activate
-    def test_post(self, client):
-        responses.add(responses.POST, "https://example.com/test", body="success", status=200)
+    def test_post(self, client, mocked_responses):
+        mocked_responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
         result = client.post("/test", {"key": "value"})
         assert result.text == "success"
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        assert len(mocked_responses.calls) == 1
+        request = mocked_responses.calls[0].request
         assert "key=value" in request.body
 
     def test_post_data_basic(self, client):
@@ -130,30 +127,28 @@ class TestClient:
         with pytest.raises(Exception, match="'latin-1' codec can't encode character"):
             client._post_data(period)
 
-    @responses.activate
-    def test_add(self, client):
-        responses.add(responses.POST, "https://example.com", body="success", status=200)
+    def test_add(self, client, mocked_responses):
+        mocked_responses.add(responses.POST, "https://example.com", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15))
         period.stuff = [Stuff(Type.event, "Test event")]
 
         client.add(period)
 
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        assert len(mocked_responses.calls) == 1
+        request = mocked_responses.calls[0].request
         assert "addPosting%3Amethod=+Add+" in request.body
 
-    @responses.activate
-    def test_update(self, client):
-        responses.add(responses.POST, "https://example.com/123", body="success", status=200)
+    def test_update(self, client, mocked_responses):
+        mocked_responses.add(responses.POST, "https://example.com/123", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15), zope_id="123")
         period.stuff = [Stuff(Type.event, "Updated event")]
 
         client.update(period)
 
-        assert len(responses.calls) == 1
-        request = responses.calls[0].request
+        assert len(mocked_responses.calls) == 1
+        request = mocked_responses.calls[0].request
         assert request.url == "https://example.com/123"
         assert "edit%3Amethod=Change" in request.body
 
@@ -296,8 +291,7 @@ class TestClientLookback:
 
 
 class TestClientList:
-    @responses.activate
-    def test_list_basic(self):
+    def test_list_basic(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -306,7 +300,7 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
@@ -322,8 +316,7 @@ class TestClientList:
         assert period.zope_id == "123"
         assert period.modified == date(2023, 1, 15)
 
-    @responses.activate
-    def test_list_with_pagination(self):
+    def test_list_with_pagination(self, mocked_responses):
         html_content1 = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -341,10 +334,10 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content1.encode('latin-1'), status=200
         )
-        responses.add(
+        mocked_responses.add(
             responses.GET,
             "https://example.com/page2",
             body=html_content2.encode('latin-1'),
@@ -360,8 +353,7 @@ class TestClientList:
         assert periods[0].zope_id == "123"
         assert periods[1].zope_id == "456"
 
-    @responses.activate
-    def test_list_stops_at_earliest(self):
+    def test_list_stops_at_earliest(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -374,7 +366,7 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
@@ -386,8 +378,7 @@ class TestClientList:
         assert len(periods) == 1
         assert periods[0].zope_id == "123"
 
-    @responses.activate
-    def test_list_with_error_handler(self):
+    def test_list_with_error_handler(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -400,7 +391,7 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
@@ -415,8 +406,7 @@ class TestClientList:
         assert len(periods) == 1
         assert periods[0].zope_id == "456"
 
-    @responses.activate
-    def test_list_error_not_handled(self):
+    def test_list_error_not_handled(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -425,7 +415,7 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
@@ -435,8 +425,7 @@ class TestClientList:
         with pytest.raises(ValueError):
             list(client.list(earliest))
 
-    @responses.activate
-    def test_list_no_next_link(self):
+    def test_list_no_next_link(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -445,7 +434,7 @@ class TestClientList:
             </a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
@@ -456,9 +445,8 @@ class TestClientList:
 
         assert len(periods) == 1
 
-    @responses.activate
-    def test_list_empty_html(self):
-        responses.add(
+    def test_list_empty_html(self, mocked_responses):
+        mocked_responses.add(
             responses.GET, "https://example.com", body="<html></html>".encode('latin-1'), status=200
         )
 
@@ -469,8 +457,7 @@ class TestClientList:
 
         assert len(periods) == 0
 
-    @responses.activate
-    def test_list_next_link_no_href(self):
+    def test_list_next_link_no_href(self, mocked_responses):
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -480,7 +467,7 @@ class TestClientList:
             <a class="next">Next</a>
         </html>
         '''
-        responses.add(
+        mocked_responses.add(
             responses.GET, "https://example.com", body=html_content.encode('latin-1'), status=200
         )
 
