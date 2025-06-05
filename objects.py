@@ -1,7 +1,6 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
-from typing import Optional
 
 
 class Type(StrEnum):
@@ -51,8 +50,8 @@ def text_to_type(text: str) -> Type:
 class Stuff:
     type: Type
     title: str
-    body: str = None
-    tags: list[str] = None
+    body: str | None = None
+    tags: list[str] | None = None
 
     def __str__(self):
         tags = ''.join(f':{tag}' for tag in (self.tags or ()))
@@ -66,12 +65,12 @@ class Stuff:
 @dataclass
 class Period:
     start: date
-    stuff: list[Stuff] = ()
-    end: Optional[date] = None
-    zope_id: str = None
-    start_url: str = None
-    start_date: date = None
-    modified: date = None
+    stuff: list[Stuff] = field(default_factory=list)
+    end: date | None = None
+    zope_id: str | None = None
+    start_url: str | None = None
+    start_date: date | None = None
+    modified: date | None = None
 
     def __post_init__(self):
         if self.start == self.end:

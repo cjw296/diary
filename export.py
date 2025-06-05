@@ -47,6 +47,7 @@ def main():
         for period in zope.list(date.min, handle_error, args.start_url, args.start_date):
             latest = period.end or period.start
             to_previous = previous and (previous - latest).days or None
+            assert period.modified is not None
             to_modified = (period.modified - latest).days
 
             if not args.quiet:
