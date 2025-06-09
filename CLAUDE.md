@@ -90,6 +90,28 @@ The application parses a custom text-based diary format defined in `diary.lark`.
 3. **Testing**: Uses pytest with PostgreSQL containers and comprehensive fixtures for different user types
 4. **Frontend**: File-based routing - add new pages in `frontend/src/routes/`
 
+## Code Quality Requirements
+
+**CRITICAL: Before creating any commit, AI agents MUST run the following commands and fix all issues:**
+
+### Required Pre-commit Checks
+```bash
+# Format code (MUST be run first)
+uv run ruff format .
+
+# Type checking (MUST pass with no errors)
+uv run mypy .
+
+# Run tests to ensure nothing is broken
+uv run pytest
+```
+
+### Failure Handling
+- If `ruff format` makes changes, those changes MUST be included in the commit
+- If `mypy` reports any type errors, they MUST be fixed before committing
+- If tests fail, they MUST be fixed before committing
+- These checks are non-negotiable - commits should never be created with formatting or typing issues
+
 ## Key Files
 - `diary.lark` - Grammar definition for diary format parsing
 - `pyproject.toml` - Python dependencies and project configuration
