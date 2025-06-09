@@ -1,6 +1,4 @@
-import re
-from datetime import date, datetime, timedelta
-from unittest.mock import Mock
+from datetime import date
 
 import pytest
 import responses
@@ -24,7 +22,6 @@ def mocked_responses():
 
 
 class TestClient:
-
     def test_init(self, client):
         compare(client.url, expected="https://example.com")
         compare(client.username, expected="testuser")
@@ -86,7 +83,9 @@ class TestClient:
 
         soup = client.get_soup("/test")
         assert isinstance(soup, BeautifulSoup)
-        assert soup.find('h1').text == "Test"
+        h1_tag = soup.find('h1')
+        assert h1_tag is not None
+        assert h1_tag.text == "Test"
 
     def test_get_soup_absolute(self, client, mocked_responses):
         html_content = '<html><body><h1>Test</h1></body></html>'
@@ -96,7 +95,9 @@ class TestClient:
 
         soup = client.get_soup("https://other.com/test", absolute=True)
         assert isinstance(soup, BeautifulSoup)
-        assert soup.find('h1').text == "Test"
+        h1_tag = soup.find('h1')
+        assert h1_tag is not None
+        assert h1_tag.text == "Test"
 
     def test_post(self, client, mocked_responses):
         mocked_responses.add(responses.POST, "https://example.com/test", body="success", status=200)
@@ -113,13 +114,16 @@ class TestClient:
 
         data = client._post_data(period)
 
-        compare(data, expected={
-            'title': "(2023-01-15) Sunday",
-            'author': "-",
-            'summary': b"EVENT Test event",
-            'encoding': "Plain",
-            'addPosting:method': " Add "
-        })
+        compare(
+            data,
+            expected={
+                'title': "(2023-01-15) Sunday",
+                'author': "-",
+                'summary': b"EVENT Test event",
+                'encoding': "Plain",
+                'addPosting:method': " Add ",
+            },
+        )
 
     def test_post_data_unicode_error(self, client):
         period = Period(start=date(2023, 1, 15))
@@ -234,7 +238,7 @@ class TestClientInferDate:
 class TestClientLookback:
     def test_lookback_basic(self):
         start = date(2023, 1, 20)
-        result = Client.lookback(start, "15", None, "15", None, None, max_days=10)
+        result = Client.lookback(start, "15", "", "15", None, None, max_days=10)
         assert result == date(2023, 1, 15)
 
     def test_lookback_with_day_name(self):
@@ -254,38 +258,38 @@ class TestClientLookback:
 
     def test_lookback_with_month(self):
         start = date(2023, 1, 20)  # Start in January
-        result = Client.lookback(start, "15 January", None, "15", "January", None, max_days=10)
+        result = Client.lookback(start, "15 January", "", "15", "January", None, max_days=10)
         assert result == date(2023, 1, 15)
 
     def test_lookback_with_month_short(self):
         start = date(2023, 1, 20)  # Start in January
-        result = Client.lookback(start, "15 Jan", None, "15", "Jan", None, max_days=10)
+        result = Client.lookback(start, "15 Jan", "", "15", "Jan", None, max_days=10)
         assert result == date(2023, 1, 15)
 
     def test_lookback_with_month_alias(self):
         start = date(2023, 9, 20)  # Start in September
-        result = Client.lookback(start, "15 Sept", None, "15", "Sept", None, max_days=10)
+        result = Client.lookback(start, "15 Sept", "", "15", "Sept", None, max_days=10)
         assert result == date(2023, 9, 15)
 
     def test_lookback_wrong_month(self):
         start = date(2023, 1, 20)  # Start in January
         with pytest.raises(AssertionError, match="was in January, but entry had February"):
-            Client.lookback(start, "15 February", None, "15", "February", None, max_days=10)
+            Client.lookback(start, "15 February", "", "15", "February", None, max_days=10)
 
     def test_lookback_with_year(self):
         start = date(2023, 1, 20)  # Start in 2023
-        result = Client.lookback(start, "15 2023", None, "15", None, "2023", max_days=10)
+        result = Client.lookback(start, "15 2023", "", "15", None, "2023", max_days=10)
         assert result == date(2023, 1, 15)
 
     def test_lookback_wrong_year(self):
         start = date(2023, 1, 20)
         with pytest.raises(AssertionError, match="was in 2023, but entry had 2022"):
-            Client.lookback(start, "15 2022", None, "15", None, "2022", max_days=10)
+            Client.lookback(start, "15 2022", "", "15", None, "2022", max_days=10)
 
     def test_lookback_max_days_exceeded(self):
         start = date(2023, 1, 20)
         with pytest.raises(LookBackFailed) as exc_info:
-            Client.lookback(start, "1", None, "1", None, None, max_days=5)
+            Client.lookback(start, "1", "", "1", None, None, max_days=5)
 
         assert exc_info.value.text == "1"
         # The lookback goes 0, 1, 2, 3, 4 days back, so max_days=5 means it tries dates 20, 19, 18, 17, 16
@@ -312,14 +316,19 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        compare(periods, expected=[Period(
-            start=date(2023, 1, 15),
-            end=None,
-            zope_id="123",
-            start_url="",
-            start_date=date.max,
-            modified=date(2023, 1, 15)
-        )])
+        compare(
+            periods,
+            expected=[
+                Period(
+                    start=date(2023, 1, 15),
+                    end=None,
+                    zope_id="123",
+                    start_url="",
+                    start_date=date.max,
+                    modified=date(2023, 1, 15),
+                )
+            ],
+        )
 
     def test_list_with_pagination(self, mocked_responses):
         html_content1 = '''
@@ -498,7 +507,7 @@ class TestClientAddStuff:
         assert result.stuff[0].title == "Test event"
         assert result.stuff[1].type == Type.note
         assert result.stuff[1].title == "from body"
-        assert "Additional notes" in result.stuff[1].body
+        assert result.stuff[1].body is not None and "Additional notes" in result.stuff[1].body
 
     def test_add_stuff_strip_whitespace(self):
         period = Period(start=date(2023, 1, 15))
@@ -625,27 +634,31 @@ class TestClientAddStuff:
         # extensive preprocessing to ensure valid diary format, it's extremely difficult
         # to trigger actual parse failures with real content. The preprocessing converts
         # any malformed input into valid EVENT entries before parsing.
-        # 
+        #
         # To test this error handling path without complex mocking would require
         # either modifying the parse function itself or creating synthetic scenarios
         # that bypass the preprocessing - both of which are more complex than the
         # simple function mocking approach below.
-        
+
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test"
         body = ""
 
         # Create mock parse function that simulates parse error with line info
+        class MockParseError(Exception):
+            def __init__(self, message):
+                super().__init__(message)
+                self.line = 2
+                self.column = 5
+                
         def mock_parse_with_line_info(source):
-            error = Exception("Simulated parse error")
-            error.line = 2
-            error.column = 5
-            raise error
+            raise MockParseError("Simulated parse error")
 
         # Use testfixtures replace_in_module to cleanly replace the parse function
         # Since parse is imported as 'from parse import parse', we need to replace it
         # in the zope module where it's used
         import zope
+
         with replace_in_module(zope.parse, mock_parse_with_line_info, module=zope):
             with ShouldRaise(ValueError):  # Should format error with line pointer
                 Client.add_stuff(period, summary, body)

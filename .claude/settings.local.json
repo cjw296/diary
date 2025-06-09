@@ -5,7 +5,14 @@
       "Bash(uv sync:*)",
       "Bash(uv run pytest:*)",
       "Bash(uv run coverage:*)",
-      "Bash(uv add:*)"
+      "Bash(uv add:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr view:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(git commit:*)",
+      "Bash(gh pr comment:*)"
     ],
     "deny": []
   }

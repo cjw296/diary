@@ -2,7 +2,7 @@ import calendar
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Iterable, Callable, Any
+from typing import Iterable, Callable
 
 from bs4 import BeautifulSoup
 from requests import Session, Response
@@ -223,7 +223,7 @@ class Client:
                 summary = head + '\n' + 'EVENT ' + tail
         else:
             lines = [line.strip() for line in summary.split('\n')]
-            summary = '\n'.join(f'EVENT ' + line for line in lines if line)
+            summary = '\n'.join('EVENT ' + line for line in lines if line)
         source = str(period) + summary + '\n'
         body = body.strip()
         if body and body != '-':

@@ -19,7 +19,7 @@ from .helpers import (
 def test_use_access_token(
     client: TestClient, superuser_id: UUID, superuser_headers: Headers
 ) -> None:
-    r = client.post(f"/login/test-token", headers=superuser_headers)
+    r = client.post("/login/test-token", headers=superuser_headers)
     check_response(
         r,
         {
@@ -35,7 +35,7 @@ def test_use_access_token(
 def test_get_users_superuser_me(
     client: TestClient, superuser_id: UUID, superuser_headers: Headers
 ) -> None:
-    r = client.get(f"/users/me", headers=superuser_headers)
+    r = client.get("/users/me", headers=superuser_headers)
     check_response(
         r,
         {
@@ -51,7 +51,7 @@ def test_get_users_superuser_me(
 def test_get_users_normal_user_me(
     client: TestClient, normal_user_headers: Headers, normal_user_id: UUID
 ) -> None:
-    r = client.get(f"/users/me", headers=normal_user_headers)
+    r = client.get("/users/me", headers=normal_user_headers)
     check_response(
         r,
         {
@@ -67,7 +67,7 @@ def test_get_users_normal_user_me(
 def test_create_user_new_email(client: TestClient, superuser_headers, session: Session) -> None:
     username = 'new@example.com'
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=superuser_headers,
         json={"email": username, "password": random_lower_string()},
     )
@@ -112,7 +112,7 @@ def test_get_existing_user_current_user(client: TestClient, session: Session) ->
     user_id = user.id
 
     data = client.post(
-        f"/login/access-token",
+        "/login/access-token",
         data={"username": username, "password": password},
     ).json()
     token = data["access_token"]
@@ -145,7 +145,7 @@ def test_create_user_existing_username(
     user_in = UserCreate(email=username, password=random_lower_string())
     User.create(session, user_in)
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=superuser_headers,
         json={"email": username, "password": random_lower_string()},
     )
@@ -158,7 +158,7 @@ def test_create_user_existing_username(
 
 def test_create_user_by_normal_user(client: TestClient, normal_user_headers: Headers) -> None:
     r = client.post(
-        f"/users/",
+        "/users/",
         headers=normal_user_headers,
         json={"email": 'new@example.com', "password": random_lower_string()},
     )
@@ -180,7 +180,7 @@ def test_retrieve_users(
     user_in2 = UserCreate(email=username2, password=random_lower_string())
     user2 = User.create(session, user_in2)
 
-    r = client.get(f"/users/", headers=session_fixtures.superuser_headers)
+    r = client.get("/users/", headers=session_fixtures.superuser_headers)
     check_response(
         r,
         {
@@ -221,7 +221,7 @@ def test_retrieve_users(
 
 
 def test_retrieve_users_by_normal_user(client: TestClient, normal_user_headers: Headers) -> None:
-    r = client.get(f"/users/", headers=normal_user_headers)
+    r = client.get("/users/", headers=normal_user_headers)
     check_response(
         r,
         {"detail": "The user doesn't have enough privileges"},
@@ -233,7 +233,7 @@ def test_update_user_me(
     client: TestClient, normal_user_headers: Headers, normal_user_id: UUID, session: Session
 ) -> None:
     r = client.patch(
-        f"/users/me",
+        "/users/me",
         headers=normal_user_headers,
         json={"full_name": "Updated Name", "email": 'new@example.com'},
     )
@@ -267,7 +267,7 @@ def test_update_password_me(
     new_password = random_lower_string()
     assert new_password != NORMAL_PASSWORD
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=normal_user_headers,
         json={"current_password": NORMAL_PASSWORD, "new_password": new_password},
     )
@@ -283,7 +283,7 @@ def test_update_password_me_incorrect_password(
     new_password = random_lower_string()
     assert new_password != NORMAL_PASSWORD
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=normal_user_headers,
         json={"current_password": new_password, "new_password": new_password},
     )
@@ -299,7 +299,7 @@ def test_update_user_me_email_exists(
     password = random_lower_string()
     user = User.create(session, UserCreate(email=username, password=password))
     r = client.patch(
-        f"/users/me",
+        "/users/me",
         headers=normal_user_headers,
         json={"email": user.email},
     )
@@ -310,7 +310,7 @@ def test_update_password_me_same_password_error(
     client: TestClient, normal_user_headers: Headers, session: Session
 ) -> None:
     r = client.patch(
-        f"/users/me/password",
+        "/users/me/password",
         headers=normal_user_headers,
         json={"current_password": NORMAL_PASSWORD, "new_password": NORMAL_PASSWORD},
     )
@@ -376,7 +376,7 @@ def test_delete_user_me(
     client: TestClient, normal_user_headers: Headers, normal_user_id: UUID, session: Session
 ) -> None:
     r = client.delete(
-        f"/users/me",
+        "/users/me",
         headers=normal_user_headers,
     )
     check_response(r, {'message': "User deleted successfully"})
@@ -390,7 +390,7 @@ def test_delete_user_me_as_superuser(
     superuser_headers: Headers,
 ) -> None:
     r = client.delete(
-        f"/users/me",
+        "/users/me",
         headers=superuser_headers,
     )
     check_response(
