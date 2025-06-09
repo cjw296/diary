@@ -650,7 +650,7 @@ class TestClientAddStuff:
                 super().__init__(message)
                 self.line = 2
                 self.column = 5
-                
+
         def mock_parse_with_line_info(source):
             raise MockParseError("Simulated parse error")
 
