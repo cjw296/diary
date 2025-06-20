@@ -14,6 +14,7 @@ class Database:
     engine: Engine
     session: Session
 
+
 @contextmanager
 def database(config_path: str):
     engine = create_engine(read_config(config_path).db)

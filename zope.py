@@ -2,7 +2,7 @@ import calendar
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Iterable, Callable, Any, Optional
+from typing import Iterable, Callable
 
 from bs4 import BeautifulSoup
 from requests import Session, Response
@@ -19,7 +19,6 @@ MONTH_ALIASES = {'Sept': 'September'}
 
 
 class LookBackFailed(ValueError):
-
     def __init__(self, possible: date, text: str):
         self.possible = possible
         self.text = text
@@ -40,7 +39,7 @@ class Client:
 
     def request(self, method: str, uri: str, absolute=False, **kw):
         if not absolute:
-            uri = self.url+uri
+            uri = self.url + uri
         result = getattr(self.session, method)(uri, **kw)
         result.raise_for_status()
         return result
@@ -59,7 +58,7 @@ class Client:
         try:
             summary = day.summary().encode('latin-1')
         except UnicodeEncodeError as e:
-            raise Exception(f'{e}: '+day.summary().encode('latin-1', 'replace').decode('latin-1'))
+            raise Exception(f'{e}: ' + day.summary().encode('latin-1', 'replace').decode('latin-1'))
         return {
             'title': day.title_date(),
             'author': '-',
@@ -81,14 +80,14 @@ class Client:
 
     @staticmethod
     def lookback(
-            start: date,
-            text: str,
-            day_name: str,
-            day_number_text: str,
-            month_name: Optional[str],
-            year_text:  Optional[str],
-            *,
-            max_days: int
+        start: date,
+        text: str,
+        day_name: str,
+        day_number_text: str,
+        month_name: str | None,
+        year_text: str | None,
+        *,
+        max_days: int,
     ):
         day_number = int(day_number_text)
         for i in range(max_days):
@@ -119,41 +118,44 @@ class Client:
         return possible
 
     @classmethod
-    def infer_date(cls, text: str, previous: date = None):
+    def infer_date(cls, text: str, previous: date | None = None):
         text = text.strip()
         try:
             inferred = datetime.strptime(text, DATE_FORMAT).date()
         except ValueError:
             match = DAY_RANGE_PATTERN.match(text)
             if not match:
-                if text in calendar.day_name:
+                if text in calendar.day_name and previous is not None:
                     for i in range(1, 5):
                         possible = previous - timedelta(days=i)
                         if possible.strftime('%A') == text:
                             return possible, None
                 raise ValueError(f'Bad format: {text!r}')
             name, day, month, year, end_name, end_day, end_month, end_year = match.groups()
-            if end_day:
-                end = cls.lookback(previous, text, end_name, end_day, end_month, end_year,
-                                   max_days=5)
+            if end_day and previous is not None:
+                end = cls.lookback(
+                    previous, text, end_name, end_day, end_month, end_year, max_days=5
+                )
                 if day and month and year:
                     start = datetime.strptime(f'{day} {month} {year}', '%d %b %Y').date()
                 else:
-                    start = cls.lookback(end, text, name, day, month, year,
-                                         max_days=25)
+                    start = cls.lookback(end, text, name, day, month, year, max_days=25)
                 return start, end
             else:
-                inferred = cls.lookback(previous, text, name, day, month, year,
-                                        max_days=5)
+                if previous is None:
+                    raise ValueError(f'Need previous date for: {text!r}')
+                inferred = cls.lookback(previous, text, name, day, month, year, max_days=5)
         else:
             formatted = inferred.strftime(DATE_FORMAT)
             assert formatted == text, f'{inferred:%d %b %y} was a {inferred:%A}, got: {text}'
         return inferred, None
 
     def list(
-            self, earliest: date,
-            handle_error: Callable[[Exception, str, date], bool] = lambda e: False,
-            next_url: str = '', seen: date = date.max,
+        self,
+        earliest: date,
+        handle_error: Callable[[Exception, str, date], bool] = lambda e, url, dt: False,
+        next_url: str = '',
+        seen: date = date.max,
     ) -> Iterable[Period]:
         while earliest < seen:
             soup = self.get_soup(next_url)
@@ -179,31 +181,34 @@ class Client:
                     zope_id=zope_id,
                     start_url=next_url,
                     start_date=start_date,
-                    modified=modified.date()
+                    modified=modified.date(),
                 )
 
-            next_link = soup.html.find_next('a', attrs={'class': 'next'})
+            next_link = soup.html.find_next('a', attrs={'class': 'next'}) if soup.html else None
             if next_link is None:
                 return
-            next_url = next_link['href']
+            href = next_link.get('href') if hasattr(next_link, 'get') else None
+            if href is None:
+                return
+            next_url = str(href)
 
     @staticmethod
-    def add_stuff(period: Period, summary: str, body: str, modified: date = None) -> Period:
+    def add_stuff(period: Period, summary: str, body: str, modified: date | None = None) -> Period:
         # remove leading and trailing whitespace
         summary = summary.strip()
         if modified is None or modified >= date(2002, 10, 4):
             # event pattern of blank line plus text at end
             if re.search(r'\n\n[\w][a-z]+.+$', summary):
                 head, tail = summary.rsplit('\n', 1)
-                summary = head + '\n' + 'EVENT '+tail
+                summary = head + '\n' + 'EVENT ' + tail
             # remove trailing whitespace on lines
             summary = re.sub(r'\s+$', '', summary, flags=re.MULTILINE)
             # fix missing caps
             summary = re.sub(
                 r"^([A-Z]{2})([a-zA-Z']+)(\s)",
-                lambda m: m.group(1)+m.group(2).upper()+m.group(3),
+                lambda m: m.group(1) + m.group(2).upper() + m.group(3),
                 summary,
-                flags=re.MULTILINE
+                flags=re.MULTILINE,
             )
             # handle "GAVE UP on"
             summary = re.sub(r'^GAVE UP on', 'CANCELLED', summary, flags=re.MULTILINE)
@@ -211,18 +216,18 @@ class Client:
             summary = re.sub(r"^[Dd]idn't ", "DIDN'T ", summary, flags=re.MULTILINE)
             # any initial text becomes an event:
             if not re.match('^[A-Z]+:? ', summary):
-                summary = 'EVENT '+summary
+                summary = 'EVENT ' + summary
             # any final text in brackets becomes an event:
             if re.search(r'\n\(.+\)$', summary):
                 head, tail = summary.rsplit('\n', 1)
-                summary = head + '\n' + 'EVENT '+tail
+                summary = head + '\n' + 'EVENT ' + tail
         else:
             lines = [line.strip() for line in summary.split('\n')]
-            summary = '\n'.join(f'EVENT '+line for line in lines if line)
+            summary = '\n'.join('EVENT ' + line for line in lines if line)
         source = str(period) + summary + '\n'
         body = body.strip()
         if body and body != '-':
-            source += ('NOTE from body:\n--\n'+body+'\n--\n')
+            source += 'NOTE from body:\n--\n' + body + '\n--\n'
         try:
             return parse(source)[0]
         except Exception as e:
@@ -230,5 +235,5 @@ class Client:
             if line is None:
                 raise
             before = '\n'.join(source.split('\n')[:line])
-            pointer = ' '*(e.column-1)+'^'
+            pointer = ' ' * (getattr(e, 'column', 1) - 1) + '^'
             raise ValueError(f'\n{e}\n\n{before}\n{pointer}') from None

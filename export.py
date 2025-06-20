@@ -47,18 +47,21 @@ def main():
         for period in zope.list(date.min, handle_error, args.start_url, args.start_date):
             latest = period.end or period.start
             to_previous = previous and (previous - latest).days or None
+            assert period.modified is not None
             to_modified = (period.modified - latest).days
 
             if not args.quiet:
-                print(f'{period.human_date()} {period.start.year} ',
-                      f'prev: {to_previous} days',
-                      f'pub: {to_modified} days',
-                      f'python export.py '
-                      f'--start-url {period.start_url} --start-date {period.start_date}')
+                print(
+                    f'{period.human_date()} {period.start.year} ',
+                    f'prev: {to_previous} days',
+                    f'pub: {to_modified} days',
+                    f'python export.py '
+                    f'--start-url {period.start_url} --start-date {period.start_date}',
+                )
 
-            error = partial(handle_error,
-                            url=f'{zope.url}/{period.zope_id}',
-                            modified=period.modified)
+            error = partial(
+                handle_error, url=f'{zope.url}/{period.zope_id}', modified=period.modified
+            )
 
             if to_modified < -18:
                 error(f'{to_modified} days to modified, gap too big!')
@@ -72,8 +75,8 @@ def main():
                 print(edit_url)
                 print()
             soup = zope.get_soup(edit_url, absolute=True)
-            summary_tag, = soup.find_all('textarea', attrs={'name': 'summary'})
-            body_tag, = soup.find_all('textarea', attrs={'name': 'body'})
+            (summary_tag,) = soup.find_all('textarea', attrs={'name': 'summary'})
+            (body_tag,) = soup.find_all('textarea', attrs={'name': 'body'})
 
             period = zope.add_stuff(
                 period, html.unescape(summary_tag.text), body_tag.text, period.modified

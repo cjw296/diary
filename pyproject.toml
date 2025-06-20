@@ -21,12 +21,38 @@ dependencies = [
     "sqlmodel>=0.0.22",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "pytest>=8.3.3",
-    "pytest-cov>=5.0.0",
+    "pytest-cov>=6.1.1",
     "testfixtures>=8.3.0",
     "pytest-alembic>=0.11.1",
     "black>=24.10.0",
     "testservices>=0.3.0",
+    "mypy>=1.16.0",
+    "ruff>=0.11.12",
+    "types-beautifulsoup4>=4.12.0",
+    "types-requests>=2.32.0",
+    "types-passlib>=1.7.0",
+    "responses>=0.25.0",
 ]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "preserve"
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "testfixtures.*",
+    "configurator",
+]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+omit = ["alembic/*"]

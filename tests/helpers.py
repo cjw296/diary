@@ -44,7 +44,7 @@ NORMAL_PASSWORD = random_lower_string()
 
 def get_user_token_headers(client: TestClient, username: str, password: str) -> dict[str, str]:
     login_data = {"username": username, "password": password}
-    r = client.post(f"/login/access-token", data=login_data)
+    r = client.post("/login/access-token", data=login_data)
     tokens = r.json()
     assert r.status_code == 200, r.text
     a_token = tokens["access_token"]
