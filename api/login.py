@@ -5,10 +5,11 @@ from config import ACCESS_TOKEN_EXPIRE_MINUTES
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from models.generic import Token
-from models.user import UserPublic, User
+from models.user import UserPublic
 from models import security
 from .deps import CurrentUser, SessionDep
 from models.security import verify_password
+from .crud import crud_user
 
 router = APIRouter()
 
@@ -20,7 +21,7 @@ def login_access_token(
     """
     OAuth2 compatible token login, get an access token for future requests
     """
-    user = User.by_email(session, email=form_data.username)
+    user = crud_user.get_by(session, email=form_data.username)
     if user is None or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     elif not user.is_active:
