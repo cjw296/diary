@@ -1,10 +1,8 @@
 import uuid
-from typing import Self
 
 from pydantic import EmailStr
 
-from models.security import get_password_hash
-from sqlmodel import Field, SQLModel, select, Session
+from sqlmodel import Field, SQLModel
 
 
 # Shared properties
@@ -56,17 +54,3 @@ class UpdatePassword(SQLModel):
 class User(UserBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     hashed_password: str
-
-    @classmethod
-    def create(cls, session: Session, user_create: UserCreate) -> Self:
-        db_obj = cls.model_validate(
-            user_create, update={"hashed_password": get_password_hash(user_create.password)}
-        )
-        session.add(db_obj)
-        return db_obj
-
-    @classmethod
-    def by_email(cls, session: Session, email: EmailStr) -> Self | None:
-        statement = select(cls).where(cls.email == email)
-        session_user = session.exec(statement).first()
-        return session_user
