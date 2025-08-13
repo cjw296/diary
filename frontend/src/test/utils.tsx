@@ -4,12 +4,22 @@ import { render } from "@testing-library/react"
 import { ReactElement } from "react"
 import theme from "../theme"
 
-// Custom render function that includes providers
+// For testing components that use router hooks, we need to provide mocks
+const MockRouter = ({ children }: { children: ReactElement }) => {
+  return (
+    <div>
+      {children}
+    </div>
+  )
+}
+
+// Custom render function that includes providers but not router
 export function renderWithProviders(ui: ReactElement) {
   const queryClient = new QueryClient({
     defaultOptions: {
       queries: {
         retry: false,
+        staleTime: 0,
       },
     },
   })
@@ -17,7 +27,9 @@ export function renderWithProviders(ui: ReactElement) {
   return render(
     <ChakraProvider theme={theme}>
       <QueryClientProvider client={queryClient}>
-        {ui}
+        <MockRouter>
+          {ui}
+        </MockRouter>
       </QueryClientProvider>
     </ChakraProvider>
   )
