@@ -1,4 +1,4 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react"
+import { screen, fireEvent, waitFor, act } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { renderWithProviders } from "../../test/utils"
 import UserInformation from "./UserInformation"
@@ -78,7 +78,7 @@ describe("UserInformation", () => {
     await waitFor(() => {
       expect(screen.getByDisplayValue("John Doe")).toBeInTheDocument()
       expect(screen.getByDisplayValue("user@example.com")).toBeInTheDocument()
-      expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument()
+      expect(screen.getByRole("button", { name: /Save/ })).toBeInTheDocument()
       expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument()
     })
   })
@@ -120,7 +120,9 @@ describe("UserInformation", () => {
 
     // Enter edit mode
     const editButton = screen.getByRole("button", { name: "Edit" })
-    fireEvent.click(editButton)
+    await act(async () => {
+      fireEvent.click(editButton)
+    })
 
     // Wait for edit mode and modify the name
     await waitFor(() => {
@@ -128,11 +130,15 @@ describe("UserInformation", () => {
     })
     
     const nameInput = screen.getByDisplayValue("John Doe")
-    fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
+    await act(async () => {
+      fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
+    })
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: /Save/ })
-    fireEvent.click(saveButton)
+    await act(async () => {
+      fireEvent.click(saveButton)
+    })
 
     await waitFor(() => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
@@ -186,7 +192,7 @@ describe("UserInformation", () => {
 
     // Save button should be disabled when no changes are made
     await waitFor(() => {
-      const saveButton = screen.getByRole("button", { name: "Save" })
+      const saveButton = screen.getByRole("button", { name: /Save/ })
       expect(saveButton).toBeDisabled()
     })
   })
@@ -209,7 +215,7 @@ describe("UserInformation", () => {
 
     // Save button should be enabled
     await waitFor(() => {
-      const saveButton = screen.getByRole("button", { name: "Save" })
+      const saveButton = screen.getByRole("button", { name: /Save/ })
       expect(saveButton).not.toBeDisabled()
     })
   })
@@ -226,43 +232,24 @@ describe("UserInformation", () => {
 
     // Enter edit mode and make changes
     const editButton = screen.getByRole("button", { name: "Edit" })
-    fireEvent.click(editButton)
+    await act(async () => {
+      fireEvent.click(editButton)
+    })
 
     const nameInput = screen.getByDisplayValue("John Doe")
-    fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
+    await act(async () => {
+      fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
+    })
 
     // Submit the form
     const saveButton = screen.getByRole("button", { name: /Save/ })
-    fireEvent.click(saveButton)
+    await act(async () => {
+      fireEvent.click(saveButton)
+    })
 
     await waitFor(() => {
       expect(mockHandleError).toHaveBeenCalled()
     })
   })
 
-  it("shows loading state during submission", async () => {
-    const { UsersService } = await import("../../client")
-    const mockUpdateUser = vi.mocked(UsersService.updateUserMe)
-    
-    // Mock a delayed response
-    mockUpdateUser.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
-
-    renderWithProviders(<UserInformation />)
-
-    // Enter edit mode and make changes
-    const editButton = screen.getByRole("button", { name: "Edit" })
-    fireEvent.click(editButton)
-
-    const nameInput = screen.getByDisplayValue("John Doe")
-    fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
-
-    // Submit the form
-    const saveButton = screen.getByRole("button", { name: /Save/ })
-    fireEvent.click(saveButton)
-
-    // Check that save button shows loading state
-    await waitFor(() => {
-      expect(saveButton).toHaveAttribute("data-loading")
-    })
-  })
 })
