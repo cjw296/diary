@@ -21,7 +21,12 @@ vi.mock("../client", () => ({
     loginAccessToken: vi.fn(),
   },
   UsersService: {
-    readUserMe: vi.fn(),
+    readUserMe: vi.fn().mockResolvedValue({
+      id: 1,
+      email: "test@example.com",
+      full_name: "Test User",
+      is_superuser: false,
+    }),
   },
 }))
 

@@ -1,15 +1,16 @@
 import { screen } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
+import { forwardRef } from "react"
 import { renderWithProviders } from "../../test/utils"
 import NotFound from "./NotFound"
 
-// Mock TanStack Router Link component
+// Mock TanStack Router Link component with proper ref forwarding
 vi.mock("@tanstack/react-router", () => ({
-  Link: ({ children, to, ...props }: any) => (
-    <a href={to} {...props}>
+  Link: forwardRef<HTMLAnchorElement, any>(({ children, to, ...props }, ref) => (
+    <a href={to} ref={ref} {...props}>
       {children}
     </a>
-  ),
+  )),
 }))
 
 describe("NotFound", () => {

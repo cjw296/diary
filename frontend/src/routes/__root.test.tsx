@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react"
+import { screen, act, waitFor } from "@testing-library/react"
 import { describe, it, expect, vi } from "vitest"
 import { renderWithProviders } from "../test/utils"
 import { Route } from "./__root"
@@ -35,19 +35,26 @@ describe("Root Route", () => {
     process.env.NODE_ENV = originalEnv
   })
 
-  it("renders outlet and devtools in development", () => {
+  it("renders outlet and devtools in development", async () => {
     process.env.NODE_ENV = "development"
     
-    renderWithProviders(<RootComponent />)
+    act(() => {
+      renderWithProviders(<RootComponent />)
+    })
     
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
-    // Devtools are lazy loaded so they may not be immediately available
+    // Wait for any suspended resources to finish loading
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 0))
+    })
   })
 
   it("renders outlet without devtools in production", () => {
     process.env.NODE_ENV = "production"
     
-    renderWithProviders(<RootComponent />)
+    act(() => {
+      renderWithProviders(<RootComponent />)
+    })
     
     expect(screen.getByTestId("outlet")).toBeInTheDocument()
   })
@@ -55,7 +62,9 @@ describe("Root Route", () => {
   it("has not found component configured", () => {
     const NotFoundComponent = Route.notFoundComponent!
     
-    renderWithProviders(<NotFoundComponent />)
+    act(() => {
+      renderWithProviders(<NotFoundComponent />)
+    })
     
     expect(screen.getByTestId("not-found")).toBeInTheDocument()
   })
