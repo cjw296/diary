@@ -37,17 +37,21 @@ vi.mock("@tanstack/react-router", () => ({
 }))
 
 // Mock react-query
-vi.mock("@tanstack/react-query", () => ({
-  useQuery: vi.fn().mockReturnValue({
-    data: { data: [] },
-    isPending: false,
-    isPlaceholderData: false,
-  }),
-  useQueryClient: vi.fn().mockReturnValue({
-    getQueryData: vi.fn().mockReturnValue({ id: 1, email: "admin@example.com", is_superuser: true }),
-    prefetchQuery: vi.fn(),
-  }),
-}))
+vi.mock("@tanstack/react-query", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tanstack/react-query")>()
+  return {
+    ...actual,
+    useQuery: vi.fn().mockReturnValue({
+      data: { data: [] },
+      isPending: false,
+      isPlaceholderData: false,
+    }),
+    useQueryClient: vi.fn().mockReturnValue({
+      getQueryData: vi.fn().mockReturnValue({ id: 1, email: "admin@example.com", is_superuser: true }),
+      prefetchQuery: vi.fn(),
+    }),
+  }
+})
 
 const Admin = Route.component
 

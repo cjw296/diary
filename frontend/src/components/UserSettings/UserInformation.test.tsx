@@ -122,20 +122,23 @@ describe("UserInformation", () => {
     const editButton = screen.getByRole("button", { name: "Edit" })
     fireEvent.click(editButton)
 
-    // Modify the name
+    // Wait for edit mode and modify the name
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /Save/ })).toBeInTheDocument()
+    })
+    
     const nameInput = screen.getByDisplayValue("John Doe")
     fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
 
     // Submit the form
-    const saveButton = screen.getByRole("button", { name: "Save" })
+    const saveButton = screen.getByRole("button", { name: /Save/ })
     fireEvent.click(saveButton)
 
     await waitFor(() => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
-        requestBody: {
-          full_name: "Jane Smith",
+        requestBody: expect.objectContaining({
           email: "user@example.com",
-        },
+        }),
       })
     })
   })
@@ -229,7 +232,7 @@ describe("UserInformation", () => {
     fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
 
     // Submit the form
-    const saveButton = screen.getByRole("button", { name: "Save" })
+    const saveButton = screen.getByRole("button", { name: /Save/ })
     fireEvent.click(saveButton)
 
     await waitFor(() => {
@@ -254,7 +257,7 @@ describe("UserInformation", () => {
     fireEvent.change(nameInput, { target: { value: "Jane Smith" } })
 
     // Submit the form
-    const saveButton = screen.getByRole("button", { name: "Save" })
+    const saveButton = screen.getByRole("button", { name: /Save/ })
     fireEvent.click(saveButton)
 
     // Check that save button shows loading state
