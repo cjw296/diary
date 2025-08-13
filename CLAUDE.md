@@ -95,6 +95,8 @@ The application parses a custom text-based diary format defined in `diary.lark`.
 **CRITICAL: Before creating any commit, AI agents MUST run the following commands and fix all issues:**
 
 ### Required Pre-commit Checks
+
+#### Backend (Python)
 ```bash
 # Format code (MUST be run first)
 uv run ruff format .
@@ -106,11 +108,25 @@ uv run mypy .
 uv run pytest
 ```
 
+#### Frontend (JavaScript/TypeScript)
+```bash
+# Navigate to frontend directory
+cd frontend
+
+# Run tests (MUST pass with no errors AND no warnings)
+npm test -- --run
+
+# Lint and format
+npm run lint
+```
+
 ### Failure Handling
 - If `ruff format` makes changes, those changes MUST be included in the commit
 - If `mypy` reports any type errors, they MUST be fixed before committing
-- If tests fail, they MUST be fixed before committing
-- These checks are non-negotiable - commits should never be created with formatting or typing issues
+- If Python tests fail, they MUST be fixed before committing
+- If JavaScript/TypeScript tests fail, they MUST be fixed before committing  
+- If JavaScript/TypeScript tests produce React warnings, they MUST be fixed before committing
+- These checks are non-negotiable - commits should never be created with formatting, typing, or test issues
 
 ## Key Files
 - `diary.lark` - Grammar definition for diary format parsing
@@ -158,8 +174,50 @@ uv run pytest
 - **Test edge cases and error paths**: Include boundary conditions and exception handling
 - **Document any untestable code**: If certain code paths cannot be tested, explain why in comments
 
-## Testing Notes
+## Testing Notes - Backend (Python)
 - Tests use PostgreSQL containers via testservices
 - Session-scoped fixtures create superuser and normal user for API testing
 - Each test runs in a transaction that's rolled back for isolation
 - Use `pytest-alembic` for migration testing
+
+## Frontend Testing Standards (JavaScript/TypeScript)
+
+**CRITICAL: ALL JavaScript/TypeScript tests MUST pass with zero failures AND zero React warnings.**
+
+### Test Framework
+- **Vitest** with React Testing Library for component testing
+- **MSW (Mock Service Worker)** for API mocking
+- **@testing-library/jest-dom** for enhanced DOM assertions
+
+### Test Structure
+- **Use descriptive test names**: Test names should clearly describe what is being tested
+- **Follow Arrange-Act-Assert pattern**: Organize tests with clear setup, action, and assertion phases
+- **Group related tests** with `describe` blocks for better organization
+
+### Component Testing
+- **Mock external dependencies**: Always mock TanStack Router, API calls, and external hooks
+- **Use proper ref forwarding**: When mocking components that accept refs, use `React.forwardRef`
+- **Test user interactions**: Use `fireEvent` and `userEvent` for realistic user interaction testing
+- **Wait for async operations**: Use `waitFor` for asynchronous state changes and API responses
+
+### React Testing Best Practices  
+- **Wrap async operations in act()**: Prevent React warnings about state updates during tests
+- **Mock API calls with proper return values**: Never return `undefined` from mocked API calls 
+- **Test accessibility**: Use semantic queries like `getByRole` when possible
+- **Handle loading states**: Test both loading and loaded states of components
+
+### Warning and Error Handling
+- **Zero tolerance for React warnings**: Fix all warnings about refs, act(), suspended resources, etc.
+- **Proper error boundaries**: Test error states and fallback UI where applicable
+- **Form validation**: Test both valid and invalid form states thoroughly
+
+### Mock Guidelines
+- **Use partial mocks with importOriginal**: Preserve real functionality while mocking specific methods
+- **Mock at the module level**: Use `vi.mock()` consistently at the top of test files
+- **Provide realistic mock data**: Mock responses should match actual API response shapes
+
+## Testing Notes - Frontend
+- Tests use Vitest with React Testing Library for component testing
+- MSW provides API mocking without touching actual backend services  
+- Each test file should be independent and not rely on other tests
+- Use the `renderWithProviders` utility for consistent provider setup
