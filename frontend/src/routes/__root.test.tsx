@@ -19,7 +19,7 @@ vi.mock("@tanstack/react-query-devtools", () => ({
 // Mock the Outlet and createRootRoute
 vi.mock("@tanstack/react-router", () => ({
 	Outlet: () => <div data-testid="outlet">Outlet Content</div>,
-	createRootRoute: (config: any) => ({
+	createRootRoute: (config: unknown) => ({
 		...config,
 		options: {
 			component: config.component,

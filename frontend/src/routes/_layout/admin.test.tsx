@@ -7,7 +7,7 @@ import { Route } from "./admin";
 // Mock child components with minimal interface for integration testing
 // Focus on Admin route orchestration behavior rather than child component internals
 vi.mock("../../components/Admin/AddUser", () => ({
-	default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => 
+	default: ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) =>
 		isOpen ? (
 			<div data-testid="add-user-modal">
 				<div>Add User Modal Open</div>
@@ -26,7 +26,8 @@ vi.mock("../../components/Common/ActionsMenu", () => ({
 
 // Mock router hooks for navigation integration testing
 vi.mock("@tanstack/react-router", async (importOriginal) => {
-	const actual = await importOriginal<typeof import("@tanstack/react-router")>();
+	const actual =
+		await importOriginal<typeof import("@tanstack/react-router")>();
 	return {
 		...actual,
 		createFileRoute: (path: string) => (config: any) => ({
@@ -51,8 +52,10 @@ describe("Admin Route - Integration Tests", () => {
 		renderWithProviders(<Admin />);
 
 		expect(screen.getByText("Users Management")).toBeInTheDocument();
-		expect(screen.getByRole("heading", { name: "Users Management" })).toBeInTheDocument();
-		
+		expect(
+			screen.getByRole("heading", { name: "Users Management" }),
+		).toBeInTheDocument();
+
 		// Integration test validates:
 		// ✅ Real page structure and heading rendering
 		// ✅ Admin route accessibility with proper heading levels
@@ -65,7 +68,7 @@ describe("Admin Route - Integration Tests", () => {
 		// Wait for table to render with real API data from MSW
 		await waitFor(() => {
 			expect(screen.getByRole("table")).toBeInTheDocument();
-			
+
 			// Verify table headers
 			expect(screen.getByText("Full name")).toBeInTheDocument();
 			expect(screen.getByText("Email")).toBeInTheDocument();
@@ -73,7 +76,7 @@ describe("Admin Route - Integration Tests", () => {
 			expect(screen.getByText("Status")).toBeInTheDocument();
 			expect(screen.getByText("Actions")).toBeInTheDocument();
 		});
-		
+
 		// Integration test validates:
 		// ✅ Real table rendering with proper accessibility roles
 		// ✅ Data integration from MSW API handlers
@@ -90,13 +93,13 @@ describe("Admin Route - Integration Tests", () => {
 			expect(screen.getByText("test@example.com")).toBeInTheDocument();
 			expect(screen.getAllByText("User")).toHaveLength(2); // Role for John Doe + add user button
 			expect(screen.getAllByText("Active")).toHaveLength(2); // Status for both users
-			
+
 			// Verify admin user display
 			expect(screen.getByText("Admin User")).toBeInTheDocument();
 			expect(screen.getByText("admin@example.com")).toBeInTheDocument();
 			expect(screen.getByText("Superuser")).toBeInTheDocument();
 		});
-		
+
 		// Integration test validates:
 		// ✅ Real user data rendering from MSW API handlers
 		// ✅ Current user identification and badge display
@@ -111,12 +114,12 @@ describe("Admin Route - Integration Tests", () => {
 		await waitFor(() => {
 			const actionMenus = screen.getAllByTestId("actions-menu");
 			expect(actionMenus.length).toBeGreaterThan(0);
-			
+
 			// Verify ActionsMenu receives proper props from MSW user data
 			expect(screen.getByText("Actions for User #1")).toBeInTheDocument(); // John Doe
 			expect(screen.getByText("Actions for User #2")).toBeInTheDocument(); // Admin User
 		});
-		
+
 		// Integration test validates:
 		// ✅ Real ActionsMenu component integration for each user row
 		// ✅ Proper prop passing (type="User", value=user object)
@@ -126,15 +129,15 @@ describe("Admin Route - Integration Tests", () => {
 	it("validates route search validation schema for pagination", () => {
 		// Test the route's search parameter validation
 		expect(typeof Route.validateSearch).toBe("function");
-		
+
 		// Verify it handles valid page parameters
 		const result = Route.validateSearch({ page: 2 });
 		expect(result.page).toBe(2);
-		
+
 		// Verify it handles invalid page parameters with fallback
 		const fallbackResult = Route.validateSearch({ page: "invalid" });
 		expect(fallbackResult.page).toBe(1); // Should fallback to 1
-		
+
 		// Integration test validates:
 		// ✅ Real Zod schema validation for route search parameters
 		// ✅ Proper parameter parsing and fallback behavior

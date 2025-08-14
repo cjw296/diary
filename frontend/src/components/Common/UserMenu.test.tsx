@@ -40,7 +40,7 @@ describe("UserMenu - Integration Tests", () => {
 		expect(menuButton).toHaveAttribute("aria-label", "Options");
 		expect(menuButton).not.toBeDisabled();
 		expect(menuButton).toHaveAttribute("type", "button");
-		
+
 		// Integration test validates:
 		// ✅ Real Chakra UI IconButton component rendering
 		// ✅ Proper accessibility attributes and ARIA labels
@@ -57,14 +57,18 @@ describe("UserMenu - Integration Tests", () => {
 		await waitFor(() => {
 			expect(screen.getByText("My profile")).toBeInTheDocument();
 			expect(screen.getByText("Log out")).toBeInTheDocument();
-			
+
 			// Verify they have proper role attributes
-			const profileItem = screen.getByText("My profile").closest('[role="menuitem"]');
-			const logoutItem = screen.getByText("Log out").closest('[role="menuitem"]');
+			const profileItem = screen
+				.getByText("My profile")
+				.closest('[role="menuitem"]');
+			const logoutItem = screen
+				.getByText("Log out")
+				.closest('[role="menuitem"]');
 			expect(profileItem).toBeInTheDocument();
 			expect(logoutItem).toBeInTheDocument();
 		});
-		
+
 		// Integration test validates:
 		// ✅ Real Chakra UI Menu component interaction and state management
 		// ✅ Menu accessibility with proper role attributes
@@ -80,16 +84,16 @@ describe("UserMenu - Integration Tests", () => {
 		// Wait for logout menu item to appear and click it
 		const logoutMenuItem = await screen.findByText("Log out");
 		expect(logoutMenuItem).toBeInTheDocument();
-		
+
 		// Verify it has the proper role
 		const logoutMenuButton = logoutMenuItem.closest('[role="menuitem"]');
 		expect(logoutMenuButton).toBeInTheDocument();
-		
+
 		await user.click(logoutMenuButton!);
 
 		// Verify useAuth logout integration
 		expect(mockLogout).toHaveBeenCalledTimes(1);
-		
+
 		// Integration test validates:
 		// ✅ Real useAuth hook integration for logout functionality
 		// ✅ Complete user interaction workflow from menu to logout
@@ -105,12 +109,12 @@ describe("UserMenu - Integration Tests", () => {
 		// Wait for profile menu item to appear
 		const profileMenuItem = await screen.findByText("My profile");
 		expect(profileMenuItem).toBeInTheDocument();
-		
+
 		// Verify it has the proper role and Link integration
 		const profileMenuLink = profileMenuItem.closest('[role="menuitem"]');
 		expect(profileMenuLink).toBeInTheDocument();
 		expect(profileMenuLink).toHaveAttribute("href", "settings");
-		
+
 		// Integration test validates:
 		// ✅ Real TanStack Router Link integration for navigation
 		// ✅ Proper navigation prop passing through component composition
