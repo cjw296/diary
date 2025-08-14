@@ -1,177 +1,206 @@
-import { describe, it, expect, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest";
 import {
-  emailPattern,
-  namePattern,
-  passwordRules,
-  confirmPasswordRules,
-  handleError,
-} from "./utils"
+	confirmPasswordRules,
+	emailPattern,
+	handleError,
+	namePattern,
+	passwordRules,
+} from "./utils";
 
 describe("utils", () => {
-  describe("emailPattern", () => {
-    it("has correct regex pattern and message", () => {
-      expect(emailPattern.value).toEqual(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i)
-      expect(emailPattern.message).toBe("Invalid email address")
-    })
+	describe("emailPattern", () => {
+		it("has correct regex pattern and message", () => {
+			expect(emailPattern.value).toEqual(
+				/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+			);
+			expect(emailPattern.message).toBe("Invalid email address");
+		});
 
-    it("validates correct email addresses", () => {
-      const validEmails = ["test@example.com", "user.name@domain.co.uk", "TEST@EXAMPLE.COM"]
-      
-      validEmails.forEach(email => {
-        expect(emailPattern.value.test(email)).toBe(true)
-      })
-    })
+		it("validates correct email addresses", () => {
+			const validEmails = [
+				"test@example.com",
+				"user.name@domain.co.uk",
+				"TEST@EXAMPLE.COM",
+			];
 
-    it("rejects invalid email addresses", () => {
-      const invalidEmails = ["invalid-email", "@example.com", "test@", "test.example.com"]
-      
-      invalidEmails.forEach(email => {
-        expect(emailPattern.value.test(email)).toBe(false)
-      })
-    })
-  })
+			validEmails.forEach((email) => {
+				expect(emailPattern.value.test(email)).toBe(true);
+			});
+		});
 
-  describe("namePattern", () => {
-    it("has correct regex pattern and message", () => {
-      expect(namePattern.value).toEqual(/^[A-Za-z\s\u00C0-\u017F]{1,30}$/)
-      expect(namePattern.message).toBe("Invalid name")
-    })
+		it("rejects invalid email addresses", () => {
+			const invalidEmails = [
+				"invalid-email",
+				"@example.com",
+				"test@",
+				"test.example.com",
+			];
 
-    it("validates correct names", () => {
-      const validNames = ["John Doe", "José María", "Anne", "Connor"]
-      
-      validNames.forEach(name => {
-        expect(namePattern.value.test(name)).toBe(true)
-      })
-    })
+			invalidEmails.forEach((email) => {
+				expect(emailPattern.value.test(email)).toBe(false);
+			});
+		});
+	});
 
-    it("rejects invalid names", () => {
-      const invalidNames = ["John123", "user@domain", "a".repeat(31)]
-      
-      invalidNames.forEach(name => {
-        expect(namePattern.value.test(name)).toBe(false)
-      })
-    })
-  })
+	describe("namePattern", () => {
+		it("has correct regex pattern and message", () => {
+			expect(namePattern.value).toEqual(/^[A-Za-z\s\u00C0-\u017F]{1,30}$/);
+			expect(namePattern.message).toBe("Invalid name");
+		});
 
-  describe("passwordRules", () => {
-    it("returns rules with required field when isRequired is true", () => {
-      const rules = passwordRules(true)
-      
-      expect(rules.required).toBe("Password is required")
-      expect(rules.minLength.value).toBe(8)
-      expect(rules.minLength.message).toBe("Password must be at least 8 characters")
-    })
+		it("validates correct names", () => {
+			const validNames = ["John Doe", "José María", "Anne", "Connor"];
 
-    it("returns rules without required field when isRequired is false", () => {
-      const rules = passwordRules(false)
-      
-      expect(rules.required).toBeUndefined()
-      expect(rules.minLength.value).toBe(8)
-      expect(rules.minLength.message).toBe("Password must be at least 8 characters")
-    })
+			validNames.forEach((name) => {
+				expect(namePattern.value.test(name)).toBe(true);
+			});
+		});
 
-    it("defaults to required when no parameter provided", () => {
-      const rules = passwordRules()
-      
-      expect(rules.required).toBe("Password is required")
-    })
-  })
+		it("rejects invalid names", () => {
+			const invalidNames = ["John123", "user@domain", "a".repeat(31)];
 
-  describe("confirmPasswordRules", () => {
-    it("returns rules with required field when isRequired is true", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues, true)
-      
-      expect(rules.required).toBe("Password confirmation is required")
-      expect(typeof rules.validate).toBe("function")
-    })
+			invalidNames.forEach((name) => {
+				expect(namePattern.value.test(name)).toBe(false);
+			});
+		});
+	});
 
-    it("returns rules without required field when isRequired is false", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues, false)
-      
-      expect(rules.required).toBeUndefined()
-      expect(typeof rules.validate).toBe("function")
-    })
+	describe("passwordRules", () => {
+		it("returns rules with required field when isRequired is true", () => {
+			const rules = passwordRules(true);
 
-    it("validates matching passwords", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues, true)
-      
-      expect(rules.validate("test123")).toBe(true)
-    })
+			expect(rules.required).toBe("Password is required");
+			expect(rules.minLength.value).toBe(8);
+			expect(rules.minLength.message).toBe(
+				"Password must be at least 8 characters",
+			);
+		});
 
-    it("validates matching new_password", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ new_password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues, true)
-      
-      expect(rules.validate("test123")).toBe(true)
-    })
+		it("returns rules without required field when isRequired is false", () => {
+			const rules = passwordRules(false);
 
-    it("rejects non-matching passwords", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues, true)
-      
-      expect(rules.validate("different")).toBe("The passwords do not match")
-    })
+			expect(rules.required).toBeUndefined();
+			expect(rules.minLength.value).toBe(8);
+			expect(rules.minLength.message).toBe(
+				"Password must be at least 8 characters",
+			);
+		});
 
-    it("defaults to required when no parameter provided", () => {
-      const mockGetValues = vi.fn().mockReturnValue({ password: "test123" })
-      const rules = confirmPasswordRules(mockGetValues)
-      
-      expect(rules.required).toBe("Password confirmation is required")
-    })
-  })
+		it("defaults to required when no parameter provided", () => {
+			const rules = passwordRules();
 
-  describe("handleError", () => {
-    it("handles simple error detail", () => {
-      const mockShowToast = vi.fn()
-      const error = {
-        body: { detail: "Custom error message" }
-      } as any
+			expect(rules.required).toBe("Password is required");
+		});
+	});
 
-      handleError(error, mockShowToast)
+	describe("confirmPasswordRules", () => {
+		it("returns rules with required field when isRequired is true", () => {
+			const mockGetValues = vi.fn().mockReturnValue({ password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues, true);
 
-      expect(mockShowToast).toHaveBeenCalledWith("Error", "Custom error message", "error")
-    })
+			expect(rules.required).toBe("Password confirmation is required");
+			expect(typeof rules.validate).toBe("function");
+		});
 
-    it("handles array error detail", () => {
-      const mockShowToast = vi.fn()
-      const error = {
-        body: { 
-          detail: [
-            { msg: "First validation error" },
-            { msg: "Second validation error" }
-          ]
-        }
-      } as any
+		it("returns rules without required field when isRequired is false", () => {
+			const mockGetValues = vi.fn().mockReturnValue({ password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues, false);
 
-      handleError(error, mockShowToast)
+			expect(rules.required).toBeUndefined();
+			expect(typeof rules.validate).toBe("function");
+		});
 
-      expect(mockShowToast).toHaveBeenCalledWith("Error", "First validation error", "error")
-    })
+		it("validates matching passwords", () => {
+			const mockGetValues = vi.fn().mockReturnValue({ password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues, true);
 
-    it("handles error without detail", () => {
-      const mockShowToast = vi.fn()
-      const error = {
-        body: {}
-      } as any
+			expect(rules.validate("test123")).toBe(true);
+		});
 
-      handleError(error, mockShowToast)
+		it("validates matching new_password", () => {
+			const mockGetValues = vi
+				.fn()
+				.mockReturnValue({ new_password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues, true);
 
-      expect(mockShowToast).toHaveBeenCalledWith("Error", "Something went wrong.", "error")
-    })
+			expect(rules.validate("test123")).toBe(true);
+		});
 
-    it("handles empty array detail", () => {
-      const mockShowToast = vi.fn()
-      const error = {
-        body: { detail: [] }
-      } as any
+		it("rejects non-matching passwords", () => {
+			const mockGetValues = vi.fn().mockReturnValue({ password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues, true);
 
-      handleError(error, mockShowToast)
+			expect(rules.validate("different")).toBe("The passwords do not match");
+		});
 
-      expect(mockShowToast).toHaveBeenCalledWith("Error", [], "error")
-    })
-  })
-})
+		it("defaults to required when no parameter provided", () => {
+			const mockGetValues = vi.fn().mockReturnValue({ password: "test123" });
+			const rules = confirmPasswordRules(mockGetValues);
+
+			expect(rules.required).toBe("Password confirmation is required");
+		});
+	});
+
+	describe("handleError", () => {
+		it("handles simple error detail", () => {
+			const mockShowToast = vi.fn();
+			const error = {
+				body: { detail: "Custom error message" },
+			} as any;
+
+			handleError(error, mockShowToast);
+
+			expect(mockShowToast).toHaveBeenCalledWith(
+				"Error",
+				"Custom error message",
+				"error",
+			);
+		});
+
+		it("handles array error detail", () => {
+			const mockShowToast = vi.fn();
+			const error = {
+				body: {
+					detail: [
+						{ msg: "First validation error" },
+						{ msg: "Second validation error" },
+					],
+				},
+			} as any;
+
+			handleError(error, mockShowToast);
+
+			expect(mockShowToast).toHaveBeenCalledWith(
+				"Error",
+				"First validation error",
+				"error",
+			);
+		});
+
+		it("handles error without detail", () => {
+			const mockShowToast = vi.fn();
+			const error = {
+				body: {},
+			} as any;
+
+			handleError(error, mockShowToast);
+
+			expect(mockShowToast).toHaveBeenCalledWith(
+				"Error",
+				"Something went wrong.",
+				"error",
+			);
+		});
+
+		it("handles empty array detail", () => {
+			const mockShowToast = vi.fn();
+			const error = {
+				body: { detail: [] },
+			} as any;
+
+			handleError(error, mockShowToast);
+
+			expect(mockShowToast).toHaveBeenCalledWith("Error", [], "error");
+		});
+	});
+});

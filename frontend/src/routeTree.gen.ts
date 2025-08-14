@@ -10,139 +10,139 @@
 
 // Import Routes
 
-import { Route as rootRoute } from './routes/__root'
-import { Route as rootTestImport } from './routes/__root.test'
-import { Route as LoginImport } from './routes/login'
-import { Route as LayoutImport } from './routes/_layout'
-import { Route as LayoutIndexImport } from './routes/_layout/index'
-import { Route as LoginTestImport } from './routes/login.test'
-import { Route as LayoutTestImport } from './routes/_layout.test'
-import { Route as LayoutSettingsImport } from './routes/_layout/settings'
-import { Route as LayoutAdminImport } from './routes/_layout/admin'
-import { Route as LayoutIndexTestImport } from './routes/_layout/index.test'
-import { Route as LayoutSettingsTestImport } from './routes/_layout/settings.test'
-import { Route as LayoutAdminTestImport } from './routes/_layout/admin.test'
+import { Route as rootRoute } from "./routes/__root";
+import { Route as rootTestImport } from "./routes/__root.test";
+import { Route as LayoutImport } from "./routes/_layout";
+import { Route as LayoutTestImport } from "./routes/_layout.test";
+import { Route as LayoutAdminImport } from "./routes/_layout/admin";
+import { Route as LayoutAdminTestImport } from "./routes/_layout/admin.test";
+import { Route as LayoutIndexImport } from "./routes/_layout/index";
+import { Route as LayoutIndexTestImport } from "./routes/_layout/index.test";
+import { Route as LayoutSettingsImport } from "./routes/_layout/settings";
+import { Route as LayoutSettingsTestImport } from "./routes/_layout/settings.test";
+import { Route as LoginImport } from "./routes/login";
+import { Route as LoginTestImport } from "./routes/login.test";
 
 // Create/Update Routes
 
 const rootTestRoute = rootTestImport.update({
-  id: '/__root/test',
-  getParentRoute: () => rootRoute,
-} as any)
+	id: "/__root/test",
+	getParentRoute: () => rootRoute,
+} as any);
 
 const LoginRoute = LoginImport.update({
-  path: '/login',
-  getParentRoute: () => rootRoute,
-} as any)
+	path: "/login",
+	getParentRoute: () => rootRoute,
+} as any);
 
 const LayoutRoute = LayoutImport.update({
-  id: '/_layout',
-  getParentRoute: () => rootRoute,
-} as any)
+	id: "/_layout",
+	getParentRoute: () => rootRoute,
+} as any);
 
 const LayoutIndexRoute = LayoutIndexImport.update({
-  path: '/',
-  getParentRoute: () => LayoutRoute,
-} as any)
+	path: "/",
+	getParentRoute: () => LayoutRoute,
+} as any);
 
 const LoginTestRoute = LoginTestImport.update({
-  path: '/test',
-  getParentRoute: () => LoginRoute,
-} as any)
+	path: "/test",
+	getParentRoute: () => LoginRoute,
+} as any);
 
 const LayoutTestRoute = LayoutTestImport.update({
-  path: '/test',
-  getParentRoute: () => LayoutRoute,
-} as any)
+	path: "/test",
+	getParentRoute: () => LayoutRoute,
+} as any);
 
 const LayoutSettingsRoute = LayoutSettingsImport.update({
-  path: '/settings',
-  getParentRoute: () => LayoutRoute,
-} as any)
+	path: "/settings",
+	getParentRoute: () => LayoutRoute,
+} as any);
 
 const LayoutAdminRoute = LayoutAdminImport.update({
-  path: '/admin',
-  getParentRoute: () => LayoutRoute,
-} as any)
+	path: "/admin",
+	getParentRoute: () => LayoutRoute,
+} as any);
 
 const LayoutIndexTestRoute = LayoutIndexTestImport.update({
-  path: '/index/test',
-  getParentRoute: () => LayoutRoute,
-} as any)
+	path: "/index/test",
+	getParentRoute: () => LayoutRoute,
+} as any);
 
 const LayoutSettingsTestRoute = LayoutSettingsTestImport.update({
-  path: '/test',
-  getParentRoute: () => LayoutSettingsRoute,
-} as any)
+	path: "/test",
+	getParentRoute: () => LayoutSettingsRoute,
+} as any);
 
 const LayoutAdminTestRoute = LayoutAdminTestImport.update({
-  path: '/test',
-  getParentRoute: () => LayoutAdminRoute,
-} as any)
+	path: "/test",
+	getParentRoute: () => LayoutAdminRoute,
+} as any);
 
 // Populate the FileRoutesByPath interface
 
-declare module '@tanstack/react-router' {
-  interface FileRoutesByPath {
-    '/_layout': {
-      preLoaderRoute: typeof LayoutImport
-      parentRoute: typeof rootRoute
-    }
-    '/login': {
-      preLoaderRoute: typeof LoginImport
-      parentRoute: typeof rootRoute
-    }
-    '/__root/test': {
-      preLoaderRoute: typeof rootTestImport
-      parentRoute: typeof rootRoute
-    }
-    '/_layout/admin': {
-      preLoaderRoute: typeof LayoutAdminImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/settings': {
-      preLoaderRoute: typeof LayoutSettingsImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/test': {
-      preLoaderRoute: typeof LayoutTestImport
-      parentRoute: typeof LayoutImport
-    }
-    '/login/test': {
-      preLoaderRoute: typeof LoginTestImport
-      parentRoute: typeof LoginImport
-    }
-    '/_layout/': {
-      preLoaderRoute: typeof LayoutIndexImport
-      parentRoute: typeof LayoutImport
-    }
-    '/_layout/admin/test': {
-      preLoaderRoute: typeof LayoutAdminTestImport
-      parentRoute: typeof LayoutAdminImport
-    }
-    '/_layout/settings/test': {
-      preLoaderRoute: typeof LayoutSettingsTestImport
-      parentRoute: typeof LayoutSettingsImport
-    }
-    '/_layout/index/test': {
-      preLoaderRoute: typeof LayoutIndexTestImport
-      parentRoute: typeof LayoutImport
-    }
-  }
+declare module "@tanstack/react-router" {
+	interface FileRoutesByPath {
+		"/_layout": {
+			preLoaderRoute: typeof LayoutImport;
+			parentRoute: typeof rootRoute;
+		};
+		"/login": {
+			preLoaderRoute: typeof LoginImport;
+			parentRoute: typeof rootRoute;
+		};
+		"/__root/test": {
+			preLoaderRoute: typeof rootTestImport;
+			parentRoute: typeof rootRoute;
+		};
+		"/_layout/admin": {
+			preLoaderRoute: typeof LayoutAdminImport;
+			parentRoute: typeof LayoutImport;
+		};
+		"/_layout/settings": {
+			preLoaderRoute: typeof LayoutSettingsImport;
+			parentRoute: typeof LayoutImport;
+		};
+		"/_layout/test": {
+			preLoaderRoute: typeof LayoutTestImport;
+			parentRoute: typeof LayoutImport;
+		};
+		"/login/test": {
+			preLoaderRoute: typeof LoginTestImport;
+			parentRoute: typeof LoginImport;
+		};
+		"/_layout/": {
+			preLoaderRoute: typeof LayoutIndexImport;
+			parentRoute: typeof LayoutImport;
+		};
+		"/_layout/admin/test": {
+			preLoaderRoute: typeof LayoutAdminTestImport;
+			parentRoute: typeof LayoutAdminImport;
+		};
+		"/_layout/settings/test": {
+			preLoaderRoute: typeof LayoutSettingsTestImport;
+			parentRoute: typeof LayoutSettingsImport;
+		};
+		"/_layout/index/test": {
+			preLoaderRoute: typeof LayoutIndexTestImport;
+			parentRoute: typeof LayoutImport;
+		};
+	}
 }
 
 // Create and export the route tree
 
 export const routeTree = rootRoute.addChildren([
-  LayoutRoute.addChildren([
-    LayoutAdminRoute.addChildren([LayoutAdminTestRoute]),
-    LayoutSettingsRoute.addChildren([LayoutSettingsTestRoute]),
-    LayoutTestRoute,
-    LayoutIndexRoute,
-    LayoutIndexTestRoute,
-  ]),
-  LoginRoute.addChildren([LoginTestRoute]),
-  rootTestRoute,
-])
+	LayoutRoute.addChildren([
+		LayoutAdminRoute.addChildren([LayoutAdminTestRoute]),
+		LayoutSettingsRoute.addChildren([LayoutSettingsTestRoute]),
+		LayoutTestRoute,
+		LayoutIndexRoute,
+		LayoutIndexTestRoute,
+	]),
+	LoginRoute.addChildren([LoginTestRoute]),
+	rootTestRoute,
+]);
 
 /* prettier-ignore-end */

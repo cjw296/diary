@@ -1,157 +1,172 @@
-import { screen, fireEvent, waitFor } from "@testing-library/react"
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { renderWithProviders } from "../../test/utils"
-import DeleteAlert from "./DeleteAlert"
-import { UsersService } from "../../client"
-import useCustomToast from "../../hooks/useCustomToast"
+import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { UsersService } from "../../client";
+import useCustomToast from "../../hooks/useCustomToast";
+import { renderWithProviders } from "../../test/utils";
+import DeleteAlert from "./DeleteAlert";
 
 // Mock the UsersService
 vi.mock("../../client", () => ({
-  UsersService: {
-    deleteUser: vi.fn(),
-  },
-}))
+	UsersService: {
+		deleteUser: vi.fn(),
+	},
+}));
 
 // Mock useCustomToast
 vi.mock("../../hooks/useCustomToast", () => ({
-  default: () => vi.fn(),
-}))
+	default: () => vi.fn(),
+}));
 
 describe("DeleteAlert", () => {
-  const mockOnClose = vi.fn()
-  
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+	const mockOnClose = vi.fn();
 
-  it("renders alert dialog when open", () => {
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
-    expect(screen.getByText("Delete User")).toBeInTheDocument()
-    expect(screen.getByText("Are you sure? You will not be able to undo this action.")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument()
-  })
+	it("renders alert dialog when open", () => {
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-  it("does not render when closed", () => {
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={false} onClose={mockOnClose} />
-    )
+		expect(screen.getByText("Delete User")).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				"Are you sure? You will not be able to undo this action.",
+			),
+		).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+		expect(screen.getByRole("button", { name: "Cancel" })).toBeInTheDocument();
+	});
 
-    expect(screen.queryByText("Delete User")).not.toBeInTheDocument()
-  })
+	it("does not render when closed", () => {
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={false} onClose={mockOnClose} />,
+		);
 
-  it("shows user-specific warning message for User type", () => {
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+		expect(screen.queryByText("Delete User")).not.toBeInTheDocument();
+	});
 
-    expect(screen.getByText(/All items associated with this user will also be/)).toBeInTheDocument()
-    expect(screen.getByText(/permantly deleted/)).toBeInTheDocument()
-  })
+	it("shows user-specific warning message for User type", () => {
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-  it("does not show user-specific warning for other types", () => {
-    renderWithProviders(
-      <DeleteAlert type="Item" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+		expect(
+			screen.getByText(/All items associated with this user will also be/),
+		).toBeInTheDocument();
+		expect(screen.getByText(/permantly deleted/)).toBeInTheDocument();
+	});
 
-    expect(screen.queryByText(/All items associated with this user will also be/)).not.toBeInTheDocument()
-  })
+	it("does not show user-specific warning for other types", () => {
+		renderWithProviders(
+			<DeleteAlert type="Item" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-  it("calls onClose when cancel button is clicked", () => {
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+		expect(
+			screen.queryByText(/All items associated with this user will also be/),
+		).not.toBeInTheDocument();
+	});
 
-    const cancelButton = screen.getByRole("button", { name: "Cancel" })
-    fireEvent.click(cancelButton)
+	it("calls onClose when cancel button is clicked", () => {
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-    expect(mockOnClose).toHaveBeenCalledTimes(1)
-  })
+		const cancelButton = screen.getByRole("button", { name: "Cancel" });
+		fireEvent.click(cancelButton);
 
-  it("calls UsersService.deleteUser when delete is submitted for User type", async () => {
-    const mockDeleteUser = vi.mocked(UsersService.deleteUser)
-    mockDeleteUser.mockResolvedValue({})
+		expect(mockOnClose).toHaveBeenCalledTimes(1);
+	});
 
-    renderWithProviders(
-      <DeleteAlert type="User" id="123" isOpen={true} onClose={mockOnClose} />
-    )
+	it("calls UsersService.deleteUser when delete is submitted for User type", async () => {
+		const mockDeleteUser = vi.mocked(UsersService.deleteUser);
+		mockDeleteUser.mockResolvedValue({});
 
-    const deleteButton = screen.getByRole("button", { name: "Delete" })
-    fireEvent.click(deleteButton)
+		renderWithProviders(
+			<DeleteAlert type="User" id="123" isOpen={true} onClose={mockOnClose} />,
+		);
 
-    await waitFor(() => {
-      expect(mockDeleteUser).toHaveBeenCalledWith({ userId: "123" })
-    })
-  })
+		const deleteButton = screen.getByRole("button", { name: "Delete" });
+		fireEvent.click(deleteButton);
 
-  it("closes dialog on successful deletion", async () => {
-    const mockDeleteUser = vi.mocked(UsersService.deleteUser)
-    mockDeleteUser.mockResolvedValue({})
+		await waitFor(() => {
+			expect(mockDeleteUser).toHaveBeenCalledWith({ userId: "123" });
+		});
+	});
 
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+	it("closes dialog on successful deletion", async () => {
+		const mockDeleteUser = vi.mocked(UsersService.deleteUser);
+		mockDeleteUser.mockResolvedValue({});
 
-    const deleteButton = screen.getByRole("button", { name: "Delete" })
-    fireEvent.click(deleteButton)
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-    await waitFor(() => {
-      expect(mockOnClose).toHaveBeenCalled()
-    })
-  })
+		const deleteButton = screen.getByRole("button", { name: "Delete" });
+		fireEvent.click(deleteButton);
 
-  it("handles deletion failure gracefully", async () => {
-    const mockDeleteUser = vi.mocked(UsersService.deleteUser)
-    mockDeleteUser.mockRejectedValue(new Error("Delete failed"))
+		await waitFor(() => {
+			expect(mockOnClose).toHaveBeenCalled();
+		});
+	});
 
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+	it("handles deletion failure gracefully", async () => {
+		const mockDeleteUser = vi.mocked(UsersService.deleteUser);
+		mockDeleteUser.mockRejectedValue(new Error("Delete failed"));
 
-    const deleteButton = screen.getByRole("button", { name: "Delete" })
-    fireEvent.click(deleteButton)
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-    // Dialog should remain open on error
-    await waitFor(() => {
-      expect(screen.getByText("Delete User")).toBeInTheDocument()
-    })
-  })
+		const deleteButton = screen.getByRole("button", { name: "Delete" });
+		fireEvent.click(deleteButton);
 
-  it("handles unsupported type gracefully", async () => {    
-    renderWithProviders(
-      <DeleteAlert type="UnsupportedType" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+		// Dialog should remain open on error
+		await waitFor(() => {
+			expect(screen.getByText("Delete User")).toBeInTheDocument();
+		});
+	});
 
-    const deleteButton = screen.getByRole("button", { name: "Delete" })
-    fireEvent.click(deleteButton)
+	it("handles unsupported type gracefully", async () => {
+		renderWithProviders(
+			<DeleteAlert
+				type="UnsupportedType"
+				id="1"
+				isOpen={true}
+				onClose={mockOnClose}
+			/>,
+		);
 
-    // Dialog should remain open on error
-    await waitFor(() => {
-      expect(screen.getByText("Delete UnsupportedType")).toBeInTheDocument()
-    })
-  })
+		const deleteButton = screen.getByRole("button", { name: "Delete" });
+		fireEvent.click(deleteButton);
 
-  it("disables buttons when submitting", async () => {
-    const mockDeleteUser = vi.mocked(UsersService.deleteUser)
-    // Mock a delayed response to test loading state
-    mockDeleteUser.mockImplementation(() => new Promise(resolve => setTimeout(resolve, 100)))
+		// Dialog should remain open on error
+		await waitFor(() => {
+			expect(screen.getByText("Delete UnsupportedType")).toBeInTheDocument();
+		});
+	});
 
-    renderWithProviders(
-      <DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />
-    )
+	it("disables buttons when submitting", async () => {
+		const mockDeleteUser = vi.mocked(UsersService.deleteUser);
+		// Mock a delayed response to test loading state
+		mockDeleteUser.mockImplementation(
+			() => new Promise((resolve) => setTimeout(resolve, 100)),
+		);
 
-    const deleteButton = screen.getByRole("button", { name: "Delete" })
-    const cancelButton = screen.getByRole("button", { name: "Cancel" })
+		renderWithProviders(
+			<DeleteAlert type="User" id="1" isOpen={true} onClose={mockOnClose} />,
+		);
 
-    fireEvent.click(deleteButton)
+		const deleteButton = screen.getByRole("button", { name: "Delete" });
+		const cancelButton = screen.getByRole("button", { name: "Cancel" });
 
-    // Check that buttons are disabled during submission
-    await waitFor(() => {
-      expect(cancelButton).toBeDisabled()
-      expect(deleteButton).toHaveAttribute("data-loading")
-    })
-  })
-})
+		fireEvent.click(deleteButton);
+
+		// Check that buttons are disabled during submission
+		await waitFor(() => {
+			expect(cancelButton).toBeDisabled();
+			expect(deleteButton).toHaveAttribute("data-loading");
+		});
+	});
+});
