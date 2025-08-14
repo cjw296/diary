@@ -20,13 +20,19 @@ export function renderWithProviders(ui: ReactElement) {
 		},
 	});
 
-	return render(
+	const renderResult = render(
 		<ChakraProvider theme={theme}>
 			<QueryClientProvider client={queryClient}>
 				<MockRouter>{ui}</MockRouter>
 			</QueryClientProvider>
 		</ChakraProvider>,
 	);
+	
+	// Return both render result and queryClient for integration testing
+	return {
+		...renderResult,
+		queryClient,
+	};
 }
 
 export * from "@testing-library/react";
