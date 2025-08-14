@@ -75,10 +75,10 @@ describe("DeleteAlert - Integration Tests", () => {
 		const apiCalls: any[] = [];
 		server.use(
 			http.delete("/users/:userId", ({ params, request }) => {
-				apiCalls.push({ 
-					method: 'DELETE', 
+				apiCalls.push({
+					method: "DELETE",
 					url: `/users/${params.userId}`,
-					userId: params.userId 
+					userId: params.userId,
 				});
 				return HttpResponse.json({ message: "User deleted successfully" });
 			}),
@@ -92,14 +92,17 @@ describe("DeleteAlert - Integration Tests", () => {
 		await user.click(deleteButton);
 
 		// Wait for API call completion
-		await waitFor(() => {
-			expect(apiCalls.length).toBeGreaterThan(0);
-		}, { timeout: 3000 });
+		await waitFor(
+			() => {
+				expect(apiCalls.length).toBeGreaterThan(0);
+			},
+			{ timeout: 3000 },
+		);
 
 		// Verify API was called correctly
-		expect(apiCalls[0].method).toBe('DELETE');
-		expect(apiCalls[0].url).toBe('/users/123');
-		expect(apiCalls[0].userId).toBe('123');
+		expect(apiCalls[0].method).toBe("DELETE");
+		expect(apiCalls[0].url).toBe("/users/123");
+		expect(apiCalls[0].userId).toBe("123");
 
 		// Integration test validates:
 		// ✅ Real HTTP DELETE request to /users/{id} endpoint
@@ -112,7 +115,7 @@ describe("DeleteAlert - Integration Tests", () => {
 		const apiCalls: any[] = [];
 		server.use(
 			http.delete("/users/:userId", ({ params }) => {
-				apiCalls.push({ method: 'DELETE', userId: params.userId });
+				apiCalls.push({ method: "DELETE", userId: params.userId });
 				return HttpResponse.json({ message: "User deleted successfully" });
 			}),
 		);
@@ -125,10 +128,13 @@ describe("DeleteAlert - Integration Tests", () => {
 		await user.click(deleteButton);
 
 		// Wait for successful completion - dialog close indicates success
-		await waitFor(() => {
-			expect(apiCalls.length).toBeGreaterThan(0);
-			expect(mockOnClose).toHaveBeenCalled();
-		}, { timeout: 3000 });
+		await waitFor(
+			() => {
+				expect(apiCalls.length).toBeGreaterThan(0);
+				expect(mockOnClose).toHaveBeenCalled();
+			},
+			{ timeout: 3000 },
+		);
 
 		// Integration test validates:
 		// ✅ Real API success response handling
@@ -155,11 +161,14 @@ describe("DeleteAlert - Integration Tests", () => {
 		await user.click(deleteButton);
 
 		// Dialog should remain open on error
-		await waitFor(() => {
-			expect(screen.getByText("Delete User")).toBeInTheDocument();
-			// Should not close dialog on error
-			expect(mockOnClose).not.toHaveBeenCalled();
-		}, { timeout: 3000 });
+		await waitFor(
+			() => {
+				expect(screen.getByText("Delete User")).toBeInTheDocument();
+				// Should not close dialog on error
+				expect(mockOnClose).not.toHaveBeenCalled();
+			},
+			{ timeout: 3000 },
+		);
 
 		// Integration test validates:
 		// ✅ Real API error handling for deletion failures
@@ -172,7 +181,7 @@ describe("DeleteAlert - Integration Tests", () => {
 		const apiCalls: any[] = [];
 		server.use(
 			http.delete("/users/:userId", ({ params }) => {
-				apiCalls.push({ method: 'DELETE', userId: params.userId });
+				apiCalls.push({ method: "DELETE", userId: params.userId });
 				return HttpResponse.json({ message: "User deleted successfully" });
 			}),
 		);
@@ -190,13 +199,16 @@ describe("DeleteAlert - Integration Tests", () => {
 		await user.click(deleteButton);
 
 		// Dialog should remain open on error, no API call should be made
-		await waitFor(() => {
-			expect(screen.getByText("Delete UnsupportedType")).toBeInTheDocument();
-			// Should not close dialog on client-side validation error
-			expect(mockOnClose).not.toHaveBeenCalled();
-			// No API call should be made for unsupported types
-			expect(apiCalls.length).toBe(0);
-		}, { timeout: 3000 });
+		await waitFor(
+			() => {
+				expect(screen.getByText("Delete UnsupportedType")).toBeInTheDocument();
+				// Should not close dialog on client-side validation error
+				expect(mockOnClose).not.toHaveBeenCalled();
+				// No API call should be made for unsupported types
+				expect(apiCalls.length).toBe(0);
+			},
+			{ timeout: 3000 },
+		);
 
 		// Integration test validates:
 		// ✅ Client-side type validation before API calls
@@ -209,7 +221,7 @@ describe("DeleteAlert - Integration Tests", () => {
 		const apiCalls: any[] = [];
 		server.use(
 			http.delete("/users/:userId", ({ params }) => {
-				apiCalls.push({ method: 'DELETE', userId: params.userId });
+				apiCalls.push({ method: "DELETE", userId: params.userId });
 				return HttpResponse.json({ message: "User deleted successfully" });
 			}),
 		);
@@ -229,10 +241,13 @@ describe("DeleteAlert - Integration Tests", () => {
 		await user.click(deleteButton);
 
 		// Wait for API call completion and success workflow
-		await waitFor(() => {
-			expect(apiCalls.length).toBeGreaterThan(0);
-			expect(mockOnClose).toHaveBeenCalled();
-		}, { timeout: 3000 });
+		await waitFor(
+			() => {
+				expect(apiCalls.length).toBeGreaterThan(0);
+				expect(mockOnClose).toHaveBeenCalled();
+			},
+			{ timeout: 3000 },
+		);
 
 		// Integration test validates:
 		// ✅ Real form submission behavior with proper button configuration

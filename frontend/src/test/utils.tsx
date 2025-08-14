@@ -27,7 +27,7 @@ export function renderWithProviders(ui: ReactElement) {
 			</QueryClientProvider>
 		</ChakraProvider>,
 	);
-	
+
 	// Return both render result and queryClient for integration testing
 	return {
 		...renderResult,
