@@ -48,13 +48,11 @@ vi.mock("@tanstack/react-query", async (importOriginal) => {
 			isPlaceholderData: false,
 		}),
 		useQueryClient: vi.fn().mockReturnValue({
-			getQueryData: vi
-				.fn()
-				.mockReturnValue({
-					id: 1,
-					email: "admin@example.com",
-					is_superuser: true,
-				}),
+			getQueryData: vi.fn().mockReturnValue({
+				id: 1,
+				email: "admin@example.com",
+				is_superuser: true,
+			}),
 			prefetchQuery: vi.fn(),
 		}),
 	};
