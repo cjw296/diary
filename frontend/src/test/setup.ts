@@ -4,6 +4,21 @@ import { OpenAPI } from "../client";
 import { resetUserData } from "./mocks/handlers";
 import { server } from "./mocks/server";
 
+// Mock matchMedia for JSDOM compatibility with Chakra UI responsive components
+Object.defineProperty(window, "matchMedia", {
+	writable: true,
+	value: (query: string) => ({
+		matches: false,
+		media: query,
+		onchange: null,
+		addListener: () => {},
+		removeListener: () => {},
+		addEventListener: () => {},
+		removeEventListener: () => {},
+		dispatchEvent: () => {},
+	}),
+});
+
 // Establish API mocking before all tests
 beforeAll(() => {
 	server.listen({ onUnhandledRequest: "error" });
