@@ -13,7 +13,10 @@
       "Bash(gh pr view:*)",
       "WebFetch(domain:github.com)",
       "Bash(git commit:*)",
-      "Bash(gh pr comment:*)"
+      "Bash(gh pr comment:*)",
+      "Read(//Users/chris/vcs/git/diary/**)",
+      "Bash(git stash:*)",
+      "Bash(git rev-parse:*)"
     ],
     "deny": []
   }
