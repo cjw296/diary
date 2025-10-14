@@ -16,7 +16,9 @@
       "Bash(gh pr comment:*)",
       "Read(//Users/chris/vcs/git/diary/**)",
       "Bash(git stash:*)",
-      "Bash(git rev-parse:*)"
+      "Bash(git rev-parse:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)"
     ],
     "deny": []
   }
