@@ -6,7 +6,7 @@
       "Bash(uv run pytest:*)",
       "Bash(uv run coverage:*)",
       "Bash(uv add:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
