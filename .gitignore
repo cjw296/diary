@@ -3,3 +3,6 @@ backend/app.yml
 .coverage
 config.yaml
 .venv
+
+# Frontend coverage reports
+frontend/coverage/

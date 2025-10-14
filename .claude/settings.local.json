@@ -6,14 +6,20 @@
       "Bash(uv run pytest:*)",
       "Bash(uv run coverage:*)",
       "Bash(uv add:*)",
-      "WebFetch(domain:docs.anthropic.com)"
+      "WebFetch(domain:docs.anthropic.com)",
       "Bash(git checkout:*)",
       "Bash(git add:*)",
       "Bash(git push:*)",
       "Bash(gh pr view:*)",
       "WebFetch(domain:github.com)",
       "Bash(git commit:*)",
-      "Bash(gh pr comment:*)"
+      "Bash(gh pr comment:*)",
+      "Read(//Users/chris/vcs/git/diary/**)",
+      "Bash(git stash:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git merge:*)",
+      "Bash(git rebase:*)",
+      "Bash(git worktree:*)"
     ],
     "deny": []
   }
