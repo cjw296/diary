@@ -19,7 +19,11 @@
       "Bash(git rev-parse:*)",
       "Bash(git merge:*)",
       "Bash(git rebase:*)",
-      "Bash(git worktree:*)"
+      "Bash(git worktree:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr close:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }
