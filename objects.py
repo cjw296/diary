@@ -10,6 +10,8 @@ class Type(StrEnum):
     note = "NOTE"
     cancelled = 'CANCELLED'
     postponed = 'POSTPONED'
+    right = 'RIGHT'
+    wrong = 'WRONG'
 
 
 TYPE_SYNONYMS = {

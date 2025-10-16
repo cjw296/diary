@@ -18,7 +18,9 @@ dependencies = [
     "pyjwt<3",
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
+    "rich>=13.9.2",
     "sqlmodel>=0.0.22",
+    "structlog>=25.1.0",
 ]
 
 [dependency-groups]
