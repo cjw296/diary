@@ -6,20 +6,13 @@ authors = ["Chris Withers <chris@withers.org>"]
 readme = "README.rst"
 requires-python = ">=3.12"
 dependencies = [
-    "alembic>=1.13.3",
     "beautifulsoup4>=4.12.3",
     "click>=8.1.7",
     "configurator>=3.2.0",
-    "fastapi[standard]>=0.115.6",
     "lark>=1.2.2",
-    "mortar-sqlalchemy>=4.0.0",
-    "passlib[bcrypt]<2",
-    "psycopg>=3.2.3",
-    "pyjwt<3",
     "pyyaml>=6.0.2",
     "requests>=2.32.3",
     "rich>=13.9.2",
-    "sqlmodel>=0.0.22",
     "structlog>=25.1.0",
 ]
 
@@ -28,15 +21,11 @@ dev = [
     "pytest>=8.3.3",
     "pytest-cov>=6.1.1",
     "testfixtures>=8.3.0",
-    "pytest-alembic>=0.11.1",
     "black>=24.10.0",
-    "testservices>=0.3.0",
     "mypy>=1.16.0",
     "ruff>=0.11.12",
     "types-beautifulsoup4>=4.12.0",
     "types-requests>=2.32.0",
-    "types-passlib>=1.7.0",
-    "pytest-asyncio>=1.0.0",
     "responses>=0.25.0",
 ]
 
@@ -57,5 +46,3 @@ module = [
 ]
 ignore_missing_imports = true
 
-[tool.coverage.run]
-omit = ["alembic/*"]
