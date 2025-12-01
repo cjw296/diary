@@ -20,7 +20,7 @@ dependencies = [
 dev = [
     "pytest>=8.3.3",
     "pytest-cov>=6.1.1",
-    "testfixtures>=8.3.0",
+    "testfixtures>=10.0.0",
     "black>=24.10.0",
     "mypy>=1.16.0",
     "ruff>=0.11.12",
@@ -41,7 +41,6 @@ check_untyped_defs = true
 
 [[tool.mypy.overrides]]
 module = [
-    "testfixtures.*",
     "configurator",
 ]
 ignore_missing_imports = true
