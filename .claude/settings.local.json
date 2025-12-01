@@ -24,7 +24,9 @@
       "Bash(gh pr close:*)",
       "Bash(git branch:*)",
       "Bash(git fetch:*)",
-      "Bash(gh repo edit:*)"
+      "Bash(gh repo edit:*)",
+      "Bash(chmod:*)",
+      "Bash(./tests_and_linting.sh)"
     ],
     "deny": []
   }
