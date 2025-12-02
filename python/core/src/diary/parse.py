@@ -1,11 +1,12 @@
 from datetime import datetime
+from importlib.resources import files
 
 from lark import Lark, Transformer, Token
 
-from objects import Period, Stuff, text_to_type
+from diary.objects import Period, Stuff, text_to_type
 
-with open('diary.lark') as grammar:
-    parser = Lark(grammar, parser='lalr')
+grammar = files('diary').joinpath('diary.lark').read_text()
+parser = Lark(grammar, parser='lalr')
 
 
 class Diary(Transformer):

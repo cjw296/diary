@@ -29,13 +29,13 @@ echo
 
 # 2. Type checking
 echo -e "${BLUE}[2/3] Running type checks...${NC}"
-uv run --all-groups mypy .
+uv run --all-groups mypy python/core/src
 echo -e "${GREEN}✓ Type checking passed${NC}"
 echo
 
 # 3. Tests with coverage
 echo -e "${BLUE}[3/3] Running tests with coverage...${NC}"
-uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing
+cd python/core && uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing && cd ../..
 echo -e "${GREEN}✓ Tests passed with 100% coverage${NC}"
 echo
 

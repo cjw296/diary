@@ -4,7 +4,7 @@ import os
 
 from testfixtures import compare, TempDirectory
 
-from config import read_config
+from diary.config import read_config
 
 
 def test_read_config_basic():

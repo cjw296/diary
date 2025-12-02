@@ -6,6 +6,24 @@ resolution-markers = [
     "python_full_version < '3.13'",
 ]
 
+[manifest]
+members = [
+    "diary",
+]
+
+[manifest.dependency-groups]
+dev = [
+    { name = "black", specifier = ">=24.10.0" },
+    { name = "mypy", specifier = ">=1.16.0" },
+    { name = "pytest", specifier = ">=8.3.3" },
+    { name = "pytest-cov", specifier = ">=6.1.1" },
+    { name = "responses", specifier = ">=0.25.0" },
+    { name = "ruff", specifier = ">=0.11.12" },
+    { name = "testfixtures", specifier = ">=10.0.0" },
+    { name = "types-beautifulsoup4", specifier = ">=4.12.0" },
+    { name = "types-requests", specifier = ">=2.32.0" },
+]
+
 [[package]]
 name = "beautifulsoup4"
 version = "4.12.3"
@@ -161,7 +179,7 @@ wheels = [
 [[package]]
 name = "diary"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "python/core" }
 dependencies = [
     { name = "beautifulsoup4" },
     { name = "click" },
@@ -171,19 +189,6 @@ dependencies = [
     { name = "requests" },
     { name = "rich" },
     { name = "structlog" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "black" },
-    { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-cov" },
-    { name = "responses" },
-    { name = "ruff" },
-    { name = "testfixtures" },
-    { name = "types-beautifulsoup4" },
-    { name = "types-requests" },
 ]
 
 [package.metadata]
@@ -196,19 +201,6 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "rich", specifier = ">=13.9.2" },
     { name = "structlog", specifier = ">=25.1.0" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "black", specifier = ">=24.10.0" },
-    { name = "mypy", specifier = ">=1.16.0" },
-    { name = "pytest", specifier = ">=8.3.3" },
-    { name = "pytest-cov", specifier = ">=6.1.1" },
-    { name = "responses", specifier = ">=0.25.0" },
-    { name = "ruff", specifier = ">=0.11.12" },
-    { name = "testfixtures", specifier = ">=10.0.0" },
-    { name = "types-beautifulsoup4", specifier = ">=4.12.0" },
-    { name = "types-requests", specifier = ">=2.32.0" },
 ]
 
 [[package]]

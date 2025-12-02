@@ -2,7 +2,7 @@ from pathlib import Path
 
 from configurator import Config
 
-from zope import Client
+from diary.zope import Client
 
 
 def read_config(path: str = 'config.yaml') -> Config:

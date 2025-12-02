@@ -6,10 +6,10 @@ from bs4 import BeautifulSoup
 from requests import HTTPError
 from testfixtures import compare, ShouldRaise, replace_in_module
 
-import parse
-import zope
-from objects import Period, Stuff, Type
-from zope import Client, LookBackFailed
+import diary.parse as parse
+import diary.zope as zope
+from diary.objects import Period, Stuff, Type
+from diary.zope import Client, LookBackFailed
 
 
 @pytest.fixture
@@ -653,7 +653,7 @@ class TestAddStuffErrorHandling:
         def mock_parse_with_line_info(source):
             raise MockParseError("Simulated parse error")
 
-        with replace_in_module(parse, mock_parse_with_line_info, module=zope):
+        with replace_in_module(parse.parse, mock_parse_with_line_info, module=zope):
             with ShouldRaise(ValueError):  # Should format error with line pointer
                 Client.add_stuff(period, summary, body)
 
@@ -665,7 +665,7 @@ class TestAddStuffErrorHandling:
         def mock_parse_with_line_info(source):
             raise TypeError("wut?")
 
-        with replace_in_module(parse, mock_parse_with_line_info, module=zope):
+        with replace_in_module(parse.parse, mock_parse_with_line_info, module=zope):
             with ShouldRaise(TypeError("wut?")):
                 Client.add_stuff(period, summary, body)
 

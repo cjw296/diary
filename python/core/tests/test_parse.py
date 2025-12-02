@@ -2,9 +2,9 @@ from datetime import date
 
 from testfixtures import compare, ShouldRaise
 
-from objects import Period, Stuff, Type
-from parse import parse
-from zope import Client, LookBackFailed
+from diary.objects import Period, Stuff, Type
+from diary.parse import parse
+from diary.zope import Client, LookBackFailed
 
 
 def test_roundtrip_day_empty():

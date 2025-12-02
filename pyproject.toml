@@ -1,23 +1,8 @@
-[project]
-name = "diary"
-version = "0.1.0"
-description = "A journal/diary to record things that have happened."
-authors = ["Chris Withers <chris@withers.org>"]
-readme = "README.rst"
-requires-python = ">=3.12"
-dependencies = [
-    "beautifulsoup4>=4.12.3",
-    "click>=8.1.7",
-    "configurator>=3.2.0",
-    "lark>=1.2.2",
-    "pyyaml>=6.0.2",
-    "requests>=2.32.3",
-    "rich>=13.9.2",
-    "structlog>=25.1.0",
-]
+[tool.uv.workspace]
+members = ["python/*"]
 
-[dependency-groups]
-dev = [
+[tool.uv]
+dev-dependencies = [
     "pytest>=8.3.3",
     "pytest-cov>=6.1.1",
     "testfixtures>=10.0.0",
@@ -38,10 +23,10 @@ quote-style = "preserve"
 [tool.mypy]
 python_version = "3.12"
 check_untyped_defs = true
+mypy_path = ["python/core/src"]
 
 [[tool.mypy.overrides]]
 module = [
     "configurator",
 ]
 ignore_missing_imports = true
-

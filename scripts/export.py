@@ -6,10 +6,10 @@ from pathlib import Path
 from testfixtures import diff
 from typing import Union
 
-from config import read_config
-from dates import parse_date
-from objects import Period
-from zope import Client, LookBackFailed
+from diary.config import read_config
+from diary.dates import parse_date
+from diary.objects import Period
+from diary.zope import Client, LookBackFailed
 
 
 def handle_error(e: Union[Exception, str], url: str, modified: date) -> bool:

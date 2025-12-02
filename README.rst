@@ -19,5 +19,5 @@ Running Scripts
 
 .. code-block:: bash
 
-  uv run ingest.py --help
-  uv run export.py --help
+  uv run scripts/ingest.py --help
+  uv run scripts/export.py --help

@@ -26,7 +26,13 @@
       "Bash(git fetch:*)",
       "Bash(gh repo edit:*)",
       "Bash(chmod:*)",
-      "Bash(./tests_and_linting.sh)"
+      "Bash(./tests_and_linting.sh)",
+      "WebSearch",
+      "WebFetch(domain:docs.astral.sh)",
+      "WebFetch(domain:stackoverflow.com)",
+      "Bash(find:*)",
+      "Bash(git mv:*)",
+      "Bash(./scripts/tests_and_linting.sh)"
     ],
     "deny": []
   }

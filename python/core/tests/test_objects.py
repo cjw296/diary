@@ -2,7 +2,7 @@ from datetime import date
 
 from testfixtures import compare, ShouldRaise
 
-from objects import Stuff, Type, Period, text_to_type
+from diary.objects import Stuff, Type, Period, text_to_type
 
 
 def test_only_start():

@@ -13,42 +13,54 @@ This is a command-line toolkit for managing a personal diary/journal. It feature
 uv sync
 
 # Diary ingestion script
-uv run ingest.py --help
+uv run scripts/ingest.py --help
 
 # Diary export script
-uv run export.py --help
+uv run scripts/export.py --help
+
+# Run all pre-commit checks (formatting, type checking, tests)
+./scripts/tests_and_linting.sh
 
 # Run tests
-uv run pytest
-uv run pytest tests/test_specific.py  # Run specific test file
-uv run pytest -k "test_name"         # Run specific test
+cd python/core && uv run pytest
+uv run pytest python/core/tests/test_specific.py  # Run specific test file
+uv run pytest -k "test_name"                      # Run specific test
 
 # Check code coverage
-uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing
+cd python/core && uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing
 
 # Code formatting
 uv run ruff format .
 
 # Type checking
-uv run mypy .
+uv run --all-groups mypy python/core/src
 ```
 
 ## Architecture
 
+### Project Structure
+This project uses a uv workspace layout:
+- `python/core/` - Main diary package
+  - `src/diary/` - Source code using src layout
+  - `tests/` - Test files
+  - `pyproject.toml` - Package configuration with hatchling build backend
+- `scripts/` - Command-line scripts (ingest.py, export.py)
+- `pyproject.toml` - Workspace configuration and dev dependencies
+
 ### Core Components (Python)
 - **Parser**: Custom Lark-based parser for diary format
 - **Key Components**:
-  - `parse.py` - Custom diary format parser using Lark grammar
-  - `objects.py` - Diary entry data models (EVENT, DID, DIDN'T, NOTE, etc.)
-  - `diary.lark` - Grammar definition for diary format
-  - `ingest.py` - Diary processing and external system sync
-  - `export.py` - Export diary entries
-  - `zope.py` - Client for Zope blogging system integration
-  - `dates.py` - Date utility functions
-  - `config.py` - Configuration management
+  - `python/core/src/diary/parse.py` - Custom diary format parser using Lark grammar
+  - `python/core/src/diary/objects.py` - Diary entry data models (EVENT, DID, DIDN'T, NOTE, etc.)
+  - `python/core/src/diary/diary.lark` - Grammar definition for diary format
+  - `scripts/ingest.py` - Diary processing and external system sync
+  - `scripts/export.py` - Export diary entries
+  - `python/core/src/diary/zope.py` - Client for Zope blogging system integration
+  - `python/core/src/diary/dates.py` - Date utility functions
+  - `python/core/src/diary/config.py` - Configuration management
 
 ### Custom Diary Format
-The application parses a custom text-based diary format defined in `diary.lark`. The parser transforms text entries into structured objects with types like EVENT, DID, DIDN'T, NOTE, CANCELLED, POSTPONED.
+The application parses a custom text-based diary format defined in `python/core/src/diary/diary.lark`. The parser transforms text entries into structured objects with types like EVENT, DID, DIDN'T, NOTE, CANCELLED, POSTPONED.
 
 ## Development Workflow
 
@@ -62,15 +74,21 @@ The application parses a custom text-based diary format defined in `diary.lark`.
 
 ### Required Pre-commit Checks
 
+Run the comprehensive test and linting script:
+```bash
+./scripts/tests_and_linting.sh
+```
+
+Or run individual checks:
 ```bash
 # Format code (MUST be run first)
 uv run ruff format .
 
 # Type checking (MUST pass with no errors)
-uv run mypy .
+uv run --all-groups mypy python/core/src
 
 # Run tests to ensure nothing is broken
-uv run pytest
+cd python/core && uv run pytest
 ```
 
 ### Failure Handling
@@ -80,9 +98,11 @@ uv run pytest
 - These checks are non-negotiable - commits should never be created with formatting, typing, or test issues
 
 ## Key Files
-- `diary.lark` - Grammar definition for diary format parsing
-- `pyproject.toml` - Python dependencies and project configuration
-- `tests/` - Test files
+- `python/core/src/diary/diary.lark` - Grammar definition for diary format parsing
+- `pyproject.toml` - Workspace configuration and dev dependencies
+- `python/core/pyproject.toml` - Package configuration with hatchling build backend
+- `python/core/tests/` - Test files
+- `scripts/` - Command-line scripts
 
 ## Testing Standards
 

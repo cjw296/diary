@@ -7,8 +7,8 @@ from typing import Iterable, Callable
 from bs4 import BeautifulSoup
 from requests import Session, Response
 
-from objects import Period
-from parse import parse
+from diary.objects import Period
+from diary.parse import parse
 
 DATE_FORMAT = '(%Y-%m-%d) %A'
 

@@ -2,12 +2,13 @@ from argparse import Namespace, ArgumentParser
 from datetime import datetime, timedelta, date
 from pathlib import Path
 
-from config import read_config
-from dates import previous_sunday, parse_date
+from diary.config import read_config
+from diary.dates import previous_sunday, parse_date
+from diary.objects import Period
+from diary.parse import parse
+from diary.zope import Client
+
 from export import dump
-from objects import Period
-from parse import parse
-from zope import Client
 
 
 def check_vm_time(client: Client):
