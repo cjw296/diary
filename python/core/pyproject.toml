@@ -18,6 +18,9 @@ dependencies = [
     "structlog>=25.1.0",
 ]
 
+[project.scripts]
+diary = "diary.cli:main"
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

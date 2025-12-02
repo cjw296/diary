@@ -12,11 +12,9 @@ This is a command-line toolkit for managing a personal diary/journal. It feature
 # Install dependencies
 uv sync
 
-# Diary ingestion script
-uv run scripts/ingest.py --help
-
-# Diary export script
-uv run scripts/export.py --help
+# Diary commands
+uv run diary ingest --help
+uv run diary export --help
 
 # Run all pre-commit checks (formatting, type checking, tests)
 ./scripts/tests_and_linting.sh
@@ -44,7 +42,7 @@ This project uses a uv workspace layout:
   - `src/diary/` - Source code using src layout
   - `tests/` - Test files
   - `pyproject.toml` - Package configuration with hatchling build backend
-- `scripts/` - Command-line scripts (ingest.py, export.py)
+- `scripts/` - Utility scripts (tests_and_linting.sh)
 - `pyproject.toml` - Workspace configuration and dev dependencies
 
 ### Core Components (Python)
@@ -53,8 +51,10 @@ This project uses a uv workspace layout:
   - `python/core/src/diary/parse.py` - Custom diary format parser using Lark grammar
   - `python/core/src/diary/objects.py` - Diary entry data models (EVENT, DID, DIDN'T, NOTE, etc.)
   - `python/core/src/diary/diary.lark` - Grammar definition for diary format
-  - `scripts/ingest.py` - Diary processing and external system sync
-  - `scripts/export.py` - Export diary entries
+  - `python/core/src/diary/cli.py` - Click-based CLI entrypoint
+  - `python/core/src/diary/ingest.py` - Diary processing and external system sync
+  - `python/core/src/diary/export.py` - Export diary entries
+  - `python/core/src/diary/dump.py` - Shared utility for dumping periods to disk
   - `python/core/src/diary/zope.py` - Client for Zope blogging system integration
   - `python/core/src/diary/dates.py` - Date utility functions
   - `python/core/src/diary/config.py` - Configuration management

@@ -1,14 +1,12 @@
-from argparse import Namespace, ArgumentParser
 from datetime import datetime, timedelta, date
 from pathlib import Path
 
-from diary.config import read_config
-from diary.dates import previous_sunday, parse_date
+from diary.config import Config
+from diary.dates import previous_sunday
+from diary.dump import dump
 from diary.objects import Period
 from diary.parse import parse
 from diary.zope import Client
-
-from export import dump
 
 
 def check_vm_time(client: Client):
@@ -21,16 +19,7 @@ def check_vm_time(client: Client):
         )
 
 
-def parse_args() -> Namespace:
-    parser = ArgumentParser()
-    parser.add_argument('--no-trim', dest='trim', action='store_false')
-    parser.add_argument('--target', type=parse_date)
-    return parser.parse_args()
-
-
-def main():
-    config = read_config()
-    args = parse_args()
+def ingest(config: Config, trim: bool = True, target: date | None = None) -> None:
     client = config.zope
 
     check_vm_time(client)
@@ -61,17 +50,13 @@ def main():
             print(f'Uploading {day.human_date()}')
             client.add(day)
 
-    target_date = args.target or date.today() + timedelta(days=6)
+    target_date = target or date.today() + timedelta(days=6)
     current = days[-1].date
     while target_date > current:
         current += timedelta(days=1)
         days.append(Period(current))
 
-    if args.trim:
+    if trim:
         cutoff = previous_sunday()
         days = [day for day in days if day.date > cutoff]
     config.diary_path.write_text('\n'.join(str(day) for day in days))
-
-
-if __name__ == '__main__':
-    main()

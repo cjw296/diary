@@ -32,7 +32,8 @@
       "WebFetch(domain:stackoverflow.com)",
       "Bash(find:*)",
       "Bash(git mv:*)",
-      "Bash(./scripts/tests_and_linting.sh)"
+      "Bash(./scripts/tests_and_linting.sh)",
+      "Bash(git rm:*)"
     ],
     "deny": []
   }

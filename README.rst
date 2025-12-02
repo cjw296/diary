@@ -14,10 +14,10 @@ In your git clone:
 
   uv sync
 
-Running Scripts
----------------
+Running Commands
+----------------
 
 .. code-block:: bash
 
-  uv run scripts/ingest.py --help
-  uv run scripts/export.py --help
+  uv run diary ingest --help
+  uv run diary export --help
