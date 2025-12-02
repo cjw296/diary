@@ -35,7 +35,12 @@ echo
 
 # 3. Tests with coverage
 echo -e "${BLUE}[3/3] Running tests with coverage...${NC}"
-cd python/core && uv run -m pytest --cov --cov-fail-under=100 --cov-report term-missing && cd ../..
+# Generate coverage args dynamically by discovering all python/*/src directories
+COV_ARGS=""
+for dir in python/*/src; do
+    COV_ARGS="$COV_ARGS --cov=$dir"
+done
+uv run pytest $COV_ARGS --cov-fail-under=100 --cov-report term-missing
 echo -e "${GREEN}✓ Tests passed with 100% coverage${NC}"
 echo
 
