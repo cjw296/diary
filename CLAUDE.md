@@ -17,7 +17,7 @@ uv run diary ingest --help
 uv run diary export --help
 
 # Run all pre-commit checks (formatting, type checking, tests)
-./scripts/tests_and_linting.sh
+./tests_and_linting.sh
 
 # Run tests
 cd python/core && uv run pytest
@@ -42,7 +42,6 @@ This project uses a uv workspace layout:
   - `src/diary/` - Source code using src layout
   - `tests/` - Test files
   - `pyproject.toml` - Package configuration with hatchling build backend
-- `scripts/` - Utility scripts (tests_and_linting.sh)
 - `pyproject.toml` - Workspace configuration and dev dependencies
 
 ### Core Components (Python)
@@ -76,7 +75,7 @@ The application parses a custom text-based diary format defined in `python/core/
 
 Run the comprehensive test and linting script:
 ```bash
-./scripts/tests_and_linting.sh
+./tests_and_linting.sh
 ```
 
 Or run individual checks:
