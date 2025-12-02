@@ -38,10 +38,14 @@ uv run --all-groups mypy python/core/src
 
 ### Project Structure
 This project uses a uv workspace layout:
-- `python/core/` - Main diary package
+- `python/core/` - Core diary library
   - `src/diary/` - Source code using src layout
   - `tests/` - Test files
   - `pyproject.toml` - Package configuration with hatchling build backend
+- `python/cli/` - CLI distribution
+  - `src/diary_cli/` - Click-based CLI entrypoint
+  - `tests/` - CLI tests
+  - `pyproject.toml` - CLI package configuration (depends on core)
 - `pyproject.toml` - Workspace configuration and dev dependencies
 
 ### Core Components (Python)
@@ -50,13 +54,13 @@ This project uses a uv workspace layout:
   - `python/core/src/diary/parse.py` - Custom diary format parser using Lark grammar
   - `python/core/src/diary/objects.py` - Diary entry data models (EVENT, DID, DIDN'T, NOTE, etc.)
   - `python/core/src/diary/diary.lark` - Grammar definition for diary format
-  - `python/core/src/diary/cli.py` - Click-based CLI entrypoint
   - `python/core/src/diary/ingest.py` - Diary processing and external system sync
   - `python/core/src/diary/export.py` - Export diary entries
   - `python/core/src/diary/dump.py` - Shared utility for dumping periods to disk
   - `python/core/src/diary/zope.py` - Client for Zope blogging system integration
   - `python/core/src/diary/dates.py` - Date utility functions
   - `python/core/src/diary/config.py` - Configuration management
+  - `python/cli/src/diary_cli/cli.py` - Click-based CLI entrypoint
 
 ### Custom Diary Format
 The application parses a custom text-based diary format defined in `python/core/src/diary/diary.lark`. The parser transforms text entries into structured objects with types like EVENT, DID, DIDN'T, NOTE, CANCELLED, POSTPONED.

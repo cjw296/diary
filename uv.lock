@@ -9,6 +9,7 @@ resolution-markers = [
 [manifest]
 members = [
     "diary",
+    "diary-cli",
 ]
 
 [manifest.dependency-groups]
@@ -182,7 +183,6 @@ version = "0.1.0"
 source = { editable = "python/core" }
 dependencies = [
     { name = "beautifulsoup4" },
-    { name = "click" },
     { name = "configurator" },
     { name = "lark" },
     { name = "pyyaml" },
@@ -194,13 +194,27 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "beautifulsoup4", specifier = ">=4.12.3" },
-    { name = "click", specifier = ">=8.1.7" },
     { name = "configurator", specifier = ">=3.2.0" },
     { name = "lark", specifier = ">=1.2.2" },
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "rich", specifier = ">=13.9.2" },
     { name = "structlog", specifier = ">=25.1.0" },
+]
+
+[[package]]
+name = "diary-cli"
+version = "0.1.0"
+source = { editable = "python/cli" }
+dependencies = [
+    { name = "click" },
+    { name = "diary" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "click", specifier = ">=8.1.7" },
+    { name = "diary", editable = "python/core" },
 ]
 
 [[package]]
