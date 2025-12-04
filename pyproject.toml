@@ -32,3 +32,7 @@ module = [
     "configurator",
 ]
 ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["python/core/tests", "python/cli/tests"]
+pythonpath = ["python/core/src", "python/cli/src"]

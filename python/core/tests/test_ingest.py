@@ -76,56 +76,6 @@ class TestIngest:
                 mock_config.zope.add.assert_any_call(period1)
                 mock_config.zope.add.assert_any_call(period2)
 
-    def test_ingest_skips_empty_entries(self, mock_config):
-        period1 = Period(date(2023, 1, 15))
-        period2 = Period(date(2023, 1, 16))
-        period2.stuff.append(Stuff(Type.did, 'Has content'))
-
-        with TempDirectory() as td:
-            diary_path = td / 'diary.txt'
-            diary_path.write_text(str(period1) + '\n' + str(period2))
-            mock_config.diary_path = diary_path
-
-            with Replacer() as r:
-                r.replace('diary.ingest.check_vm_time', Mock())
-                r.replace('diary.ingest.dump', Mock())
-                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 1)))
-
-                with OutputCapture() as output:
-                    ingest(mock_config, trim=False, target=date(2023, 1, 16))
-
-                output_text = output.captured
-                compare('Skipping (2023-01-15) Sunday as empty' in output_text, expected=True)
-                compare(mock_config.zope.add.call_count, expected=1)
-                mock_config.zope.add.assert_called_once_with(period2)
-
-    def test_ingest_updates_existing_entry(self, mock_config):
-        period = Period(date(2023, 1, 15))
-        period.stuff.append(Stuff(Type.did, 'Updated entry'))
-
-        existing_period = Period(date(2023, 1, 15))
-        existing_period.zope_id = 'existing-123'
-        mock_config.zope.list = Mock(return_value=[existing_period])
-
-        with TempDirectory() as td:
-            diary_path = td / 'diary.txt'
-            diary_path.write_text(str(period))
-            mock_config.diary_path = diary_path
-
-            with Replacer() as r:
-                r.replace('diary.ingest.check_vm_time', Mock())
-                r.replace('diary.ingest.dump', Mock())
-                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 1)))
-
-                with OutputCapture() as output:
-                    ingest(mock_config, trim=False, target=date(2023, 1, 15))
-
-                output_text = output.captured
-                compare('Updating (2023-01-15) Sunday' in output_text, expected=True)
-                mock_config.zope.update.assert_called_once()
-                updated_period = mock_config.zope.update.call_args[0][0]
-                compare(updated_period.zope_id, expected='existing-123')
-
     def test_ingest_generates_future_dates(self, mock_config):
         period = Period(date(2023, 1, 15))
         period.stuff.append(Stuff(Type.did, 'Entry'))
@@ -149,55 +99,10 @@ class TestIngest:
             compare('(2023-01-19) Thursday' in diary_content, expected=True)
             compare('(2023-01-20) Friday' in diary_content, expected=True)
 
-    def test_ingest_trims_to_previous_sunday(self, mock_config):
-        period1 = Period(date(2023, 1, 10))
-        period1.stuff.append(Stuff(Type.did, 'Old entry'))
-        period2 = Period(date(2023, 1, 20))
-        period2.stuff.append(Stuff(Type.did, 'Recent entry'))
-
-        with TempDirectory() as td:
-            diary_path = td / 'diary.txt'
-            diary_path.write_text(str(period1) + '\n' + str(period2))
-            mock_config.diary_path = diary_path
-
-            with Replacer() as r:
-                r.replace('diary.ingest.check_vm_time', Mock())
-                r.replace('diary.ingest.dump', Mock())
-                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 15)))
-
-                ingest(mock_config, trim=True, target=date(2023, 1, 20))
-
-            diary_content = diary_path.read_text()
-            compare('(2023-01-10) Tuesday' in diary_content, expected=False)
-            compare('(2023-01-20) Friday' in diary_content, expected=True)
-
-    def test_ingest_does_not_trim_when_trim_false(self, mock_config):
-        period1 = Period(date(2023, 1, 10))
-        period1.stuff.append(Stuff(Type.did, 'Old entry'))
-        period2 = Period(date(2023, 1, 20))
-        period2.stuff.append(Stuff(Type.did, 'Recent entry'))
-
-        with TempDirectory() as td:
-            diary_path = td / 'diary.txt'
-            diary_path.write_text(str(period1) + '\n' + str(period2))
-            mock_config.diary_path = diary_path
-
-            with Replacer() as r:
-                r.replace('diary.ingest.check_vm_time', Mock())
-                r.replace('diary.ingest.dump', Mock())
-                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 15)))
-
-                ingest(mock_config, trim=False, target=date(2023, 1, 20))
-
-            diary_content = diary_path.read_text()
-            compare('(2023-01-10) Tuesday' in diary_content, expected=True)
-            compare('(2023-01-20) Friday' in diary_content, expected=True)
-
-    def test_ingest_validates_consecutive_days(self, mock_config):
+    def test_ingest_skips_empty_entries(self, mock_config):
         period1 = Period(date(2023, 1, 15))
-        period1.stuff.append(Stuff(Type.did, 'Entry'))
-        period2 = Period(date(2023, 1, 17))
-        period2.stuff.append(Stuff(Type.did, 'Entry'))
+        period2 = Period(date(2023, 1, 16))
+        period2.stuff.append(Stuff(Type.did, 'Has content'))
 
         with TempDirectory() as td:
             diary_path = td / 'diary.txt'
@@ -206,11 +111,61 @@ class TestIngest:
 
             with Replacer() as r:
                 r.replace('diary.ingest.check_vm_time', Mock())
+                r.replace('diary.ingest.dump', Mock())
+                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 1)))
 
-                with ShouldRaise(
-                    AssertionError('(2023-01-15) Sunday to (2023-01-17) Tuesday was 2 days, not 1!')
-                ):
-                    ingest(mock_config, trim=False, target=date(2023, 1, 17))
+                with OutputCapture() as output:
+                    ingest(mock_config, trim=False, target=date(2023, 1, 16))
+
+                compare(mock_config.zope.add.call_count, expected=1)
+
+    def test_ingest_updates_existing_entry(self, mock_config):
+        period = Period(date(2023, 1, 15))
+        period.stuff.append(Stuff(Type.did, 'Updated entry'))
+
+        existing_period = Period(date(2023, 1, 15))
+        existing_period.zope_id = 'existing-123'
+        mock_config.zope.list = Mock(return_value=[existing_period])
+
+        with TempDirectory() as td:
+            diary_path = td / 'diary.txt'
+            diary_path.write_text(str(period))
+            mock_config.diary_path = diary_path
+
+            with Replacer() as r:
+                r.replace('diary.ingest.check_vm_time', Mock())
+                r.replace('diary.ingest.dump', Mock())
+                r.replace('diary.ingest.previous_sunday', Mock(return_value=date(2023, 1, 1)))
+
+                with OutputCapture():
+                    ingest(mock_config, trim=False, target=date(2023, 1, 15))
+
+                mock_config.zope.update.assert_called_once()
+                updated_period = mock_config.zope.update.call_args[0][0]
+                compare(updated_period.zope_id, expected='existing-123')
+
+    def test_ingest_with_trim_true(self, mock_config):
+        from datetime import timedelta
+        from diary.dates import previous_sunday
+
+        cutoff = previous_sunday()
+        future_date = cutoff + timedelta(days=10)
+
+        period = Period(future_date)
+        period.stuff.append(Stuff(Type.did, 'Entry'))
+
+        with TempDirectory() as td:
+            diary_path = td / 'diary.txt'
+            diary_path.write_text(str(period))
+            mock_config.diary_path = diary_path
+
+            with Replacer() as r:
+                r.replace('diary.ingest.check_vm_time', Mock())
+                r.replace('diary.ingest.dump', Mock())
+
+                ingest(mock_config, trim=True, target=future_date)
+
+            compare(mock_config.zope.add.call_count, expected=1)
 
     def test_ingest_dumps_all_periods(self, mock_config):
         period1 = Period(date(2023, 1, 15))

@@ -9,11 +9,22 @@ from diary_cli.cli import click_export, click_ingest, main
 
 
 class TestMain:
-    def test_main_group_invokes(self):
+    def test_main_group_help(self):
         runner = CliRunner()
         result = runner.invoke(main, ['--help'])
         compare(result.exit_code, expected=0)
         compare('Usage:' in result.output, expected=True)
+
+    def test_main_group_invokes_subcommand(self):
+        runner = CliRunner()
+        with Replacer() as r:
+            mock_config = Mock()
+            r.replace('diary_cli.cli.read_config', Mock(return_value=mock_config))
+            r.replace('diary_cli.cli.ingest', Mock())
+
+            result = runner.invoke(main, ['ingest'])
+
+            compare(result.exit_code, expected=0)
 
 
 class TestExportCommand:
