@@ -35,7 +35,17 @@
       "Bash(./scripts/tests_and_linting.sh)",
       "Bash(git rm:*)",
       "Bash(uv pip list:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(tree:*)",
+      "Bash(uv tree:*)",
+      "Bash(cat:*)",
+      "Bash(python3:*)",
+      "WebFetch(domain:coverage.readthedocs.io)",
+      "WebFetch(domain:pytest-cov.readthedocs.io)",
+      "Bash(bash -c:*)",
+      "Bash(make clean:*)",
+      "Bash(make html:*)",
+      "Bash(open:*)"
     ],
     "deny": []
   }
