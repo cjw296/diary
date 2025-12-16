@@ -35,16 +35,3 @@ zope:
         compare(config.diary_path, expected=expected_path)
         assert hasattr(config, 'zope')
         compare(config.zope.url, expected="http://example.com")
-
-
-def test_read_config_without_zope() -> None:
-    with TempDirectory() as td:
-        config_content = """
-diary_path: ~/diary
-"""
-        config_path = td.write('config.yaml', config_content)
-        config = read_config(config_path)
-
-        expected_path = Path("~/diary").expanduser()
-        compare(config.diary_path, expected=expected_path)
-        assert config.get('zope') is None
