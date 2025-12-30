@@ -2,7 +2,7 @@ import calendar
 import re
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
-from typing import Iterable, Callable
+from typing import Any, Iterable, Callable
 
 from bs4 import BeautifulSoup
 from requests import Session, Response
@@ -23,7 +23,7 @@ class LookBackFailed(ValueError):
         self.possible = possible
         self.text = text
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Looked back to {self.possible}, couldn't match {self.text}"
 
 
@@ -33,11 +33,11 @@ class Client:
     username: str
     password: str
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.session: Session = Session()
         self.session.auth = (self.username, self.password)
 
-    def request(self, method: str, uri: str, absolute=False, **kw):
+    def request(self, method: str, uri: str, absolute: bool = False, **kw: Any) -> Response:
         if not absolute:
             uri = self.url + uri
         result = getattr(self.session, method)(uri, **kw)
@@ -51,10 +51,10 @@ class Client:
         content = self.get(uri, absolute).content.decode('latin-1')
         return BeautifulSoup(content, features="html.parser")
 
-    def post(self, uri: str, data: dict[str, str]) -> Response:
+    def post(self, uri: str, data: dict[str, str | bytes]) -> Response:
         return self.request('post', uri, data=data)
 
-    def _post_data(self, day) -> dict[str, str]:
+    def _post_data(self, day: Period) -> dict[str, str | bytes]:
         try:
             summary = day.summary().encode('latin-1')
         except UnicodeEncodeError as e:
@@ -67,12 +67,12 @@ class Client:
             'addPosting:method': ' Add ',
         }
 
-    def add(self, day: Period):
+    def add(self, day: Period) -> None:
         data = self._post_data(day)
         data['addPosting:method'] = ' Add '
         self.post('', data=data)
 
-    def update(self, day: Period):
+    def update(self, day: Period) -> None:
         assert day.zope_id
         data = self._post_data(day)
         data['edit:method'] = 'Change'
@@ -88,7 +88,7 @@ class Client:
         year_text: str | None,
         *,
         max_days: int,
-    ):
+    ) -> date:
         day_number = int(day_number_text)
         for i in range(max_days):
             possible = start - timedelta(days=i)
@@ -118,7 +118,7 @@ class Client:
         return possible
 
     @classmethod
-    def infer_date(cls, text: str, previous: date | None = None):
+    def infer_date(cls, text: str, previous: date | None = None) -> tuple[date, date | None]:
         text = text.strip()
         try:
             inferred = datetime.strptime(text, DATE_FORMAT).date()

@@ -9,7 +9,7 @@ from diary.parse import parse
 from diary.zope import Client
 
 
-def check_vm_time(client: Client):
+def check_vm_time(client: Client) -> None:
     vm_now = datetime.strptime(client.get('/vm_now').text, '%Y-%m-%dT%H:%M:%S\n')
     local_now = datetime.now()
     delta = abs(local_now - vm_now)

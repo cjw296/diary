@@ -5,7 +5,7 @@ from testfixtures import diff
 from diary.objects import Period
 
 
-def dump(path: Path, period: Period, dry_run: bool):
+def dump(path: Path, period: Period, dry_run: bool) -> None:
     year = str(period.start.year)
     month = f'{period.start.month:02}'
     day = f'{period.start.day:02}.txt'

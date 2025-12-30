@@ -7,27 +7,27 @@ from diary.parse import parse
 from diary.zope import Client, LookBackFailed
 
 
-def test_roundtrip_day_empty():
+def test_roundtrip_day_empty() -> None:
     day = Period(date(2020, 2, 1))
     compare(parse(str(day)), expected=[day])
 
 
-def test_roundtrip_day_single():
+def test_roundtrip_day_single() -> None:
     day = Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun')])
     compare(parse(str(day)), expected=[day])
 
 
-def test_roundtrip_day_start_and_end():
+def test_roundtrip_day_start_and_end() -> None:
     day = Period(date(2020, 2, 1), end=date(2020, 2, 3))
     compare(parse(str(day)), expected=[day])
 
 
-def test_roundtrip_day_single_with_body():
+def test_roundtrip_day_single_with_body() -> None:
     day = Period(date(2020, 2, 1), [Stuff(Type.cancelled, 'fun', 'stuff\nthings')])
     compare(parse(str(day)), expected=[day])
 
 
-def test_roundtip_mixed():
+def test_roundtip_mixed() -> None:
     day = Period(
         date(2020, 1, 1),
         [
@@ -40,7 +40,7 @@ def test_roundtip_mixed():
     compare(parse(str(day)), expected=[day])
 
 
-def test_single_sad():
+def test_single_sad() -> None:
     compare(
         parse(("(2021-11-02) Tuesday\n==================\nEVENT woke far too early :-(\n")),
         expected=[
@@ -54,7 +54,7 @@ def test_single_sad():
     )
 
 
-def test_did_not():
+def test_did_not() -> None:
     compare(
         parse(("(2021-11-02) Tuesday\n==================\nDIDN'T do anything\n")),
         expected=[
@@ -68,7 +68,7 @@ def test_did_not():
     )
 
 
-def test_multi_sad_stuff():
+def test_multi_sad_stuff() -> None:
     compare(
         parse(("(2021-11-02) Tuesday\n==================\nDID see dentist, again :'(\nDID form\n")),
         expected=[
@@ -83,7 +83,7 @@ def test_multi_sad_stuff():
     )
 
 
-def test_multi_day():
+def test_multi_day() -> None:
     compare(
         parse(
             (
@@ -113,7 +113,7 @@ def test_multi_day():
     )
 
 
-def test_multi_day_multi_line_separator():
+def test_multi_day_multi_line_separator() -> None:
     compare(
         parse(
             (
@@ -143,7 +143,7 @@ def test_multi_day_multi_line_separator():
     )
 
 
-def test_full_example():
+def test_full_example() -> None:
     compare(
         parse(
             (
@@ -197,7 +197,7 @@ def test_full_example():
     )
 
 
-def test_multiple_empty():
+def test_multiple_empty() -> None:
     compare(
         parse(
             (
@@ -215,7 +215,7 @@ def test_multiple_empty():
     )
 
 
-def test_colon_after_event():
+def test_colon_after_event() -> None:
     compare(
         parse(("(2021-11-03) Wednesday\n======================\nEVENT: something happened\n")),
         expected=[
@@ -224,7 +224,7 @@ def test_colon_after_event():
     )
 
 
-def test_stuff_synonyms():
+def test_stuff_synonyms() -> None:
     compare(
         parse(("(2021-11-03) Wednesday\n======================\nCANCEL everything\n")),
         expected=[
@@ -233,7 +233,7 @@ def test_stuff_synonyms():
     )
 
 
-def test_tags():
+def test_tags() -> None:
     compare(
         parse(("(2021-11-03) Wednesday\n======================\nDID:tag1:tag2 some thing\n")),
         expected=[
@@ -242,7 +242,7 @@ def test_tags():
     )
 
 
-def test_tags_with_body():
+def test_tags_with_body() -> None:
     compare(
         parse(
             (
@@ -263,7 +263,7 @@ def test_tags_with_body():
     )
 
 
-def test_newline_in_body():
+def test_newline_in_body() -> None:
     compare(
         parse(
             (
@@ -285,7 +285,7 @@ def test_newline_in_body():
     )
 
 
-def test_body_missing_colon():
+def test_body_missing_colon() -> None:
     compare(
         parse(("(2021-11-03) Wednesday\n======================\nDID thing\n--\nThe body\n--\n")),
         expected=[
@@ -294,7 +294,7 @@ def test_body_missing_colon():
     )
 
 
-def test_body_excess_dashes():
+def test_body_excess_dashes() -> None:
     compare(
         parse(("(2021-11-03) Wednesday\n======================\nDID thing:\n---\nThe body\n---\n")),
         expected=[
@@ -303,7 +303,7 @@ def test_body_excess_dashes():
     )
 
 
-def test_body_dashy_table():
+def test_body_dashy_table() -> None:
     compare(
         parse(
             (
@@ -754,7 +754,7 @@ class TestAddStuff:
         )
 
 
-def test_date_day_mismatch():
+def test_date_day_mismatch() -> None:
     from lark.exceptions import VisitError
 
     with ShouldRaise(VisitError):

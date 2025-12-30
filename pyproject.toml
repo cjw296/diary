@@ -24,7 +24,8 @@ quote-style = "preserve"
 [tool.mypy]
 python_version = "3.12"
 check_untyped_defs = true
-mypy_path = ["python/core/src"]
+disallow_untyped_defs = true
+mypy_path = ["python"]
 
 [[tool.mypy.overrides]]
 module = [

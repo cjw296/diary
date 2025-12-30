@@ -29,7 +29,7 @@ echo
 
 # 2. Type checking
 echo -e "${BLUE}[2/3] Running type checks...${NC}"
-uv run --all-groups mypy python/core/src
+uv run --all-groups mypy python/
 echo -e "${GREEN}✓ Type checking passed${NC}"
 echo
 

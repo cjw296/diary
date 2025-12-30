@@ -12,5 +12,5 @@ def previous_sunday() -> date:
     return current
 
 
-def parse_date(text) -> date:
+def parse_date(text: str) -> date:
     return datetime.strptime(text, '%Y-%m-%d').date()

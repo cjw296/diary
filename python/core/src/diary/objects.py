@@ -55,7 +55,7 @@ class Stuff:
     body: str | None = None
     tags: list[str] | None = None
 
-    def __str__(self):
+    def __str__(self) -> str:
         tags = ''.join(f':{tag}' for tag in (self.tags or ()))
         text = f'{self.type.value}{tags} {self.title.strip()}'
         if self.body:
@@ -74,33 +74,33 @@ class Period:
     start_date: date | None = None
     modified: date | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if self.start == self.end:
             self.end = None
         elif self.end and self.start > self.end:
             raise AssertionError(f'{self.start} > {self.end}')
 
     @property
-    def date(self):
+    def date(self) -> date:
         assert self.end is None, str(self.end)
         return self.start
 
-    def _date(self, format):
+    def _date(self, format: str) -> str:
         text = self.start.strftime(format)
         if self.end:
             text += self.end.strftime(' to ' + format)
         return text
 
-    def human_date(self):
+    def human_date(self) -> str:
         return self._date('%a %d %b')
 
-    def title_date(self):
+    def title_date(self) -> str:
         return self._date('(%Y-%m-%d) %A')
 
-    def summary(self):
+    def summary(self) -> str:
         return '\n'.join(str(s) for s in self.stuff)
 
-    def __str__(self):
+    def __str__(self) -> str:
         header = self.title_date()
         parts = [header, '=' * len(header)]
         summary = self.summary()

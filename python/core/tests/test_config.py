@@ -7,7 +7,7 @@ from testfixtures import compare, TempDirectory
 from diary.config import read_config
 
 
-def test_read_config_basic():
+def test_read_config_basic() -> None:
     with TempDirectory() as td:
         config_content = """
 diary_path: ~/diary
@@ -19,7 +19,7 @@ diary_path: ~/diary
         compare(config.diary_path, expected=expected_path)
 
 
-def test_read_config_with_zope():
+def test_read_config_with_zope() -> None:
     with TempDirectory() as td:
         config_content = """
 diary_path: ~/diary
@@ -37,7 +37,7 @@ zope:
         compare(config.zope.url, expected="http://example.com")
 
 
-def test_read_config_without_zope():
+def test_read_config_without_zope() -> None:
     with TempDirectory() as td:
         config_content = """
 diary_path: ~/diary
