@@ -33,7 +33,9 @@
       "Bash(find:*)",
       "Bash(git mv:*)",
       "Bash(./scripts/tests_and_linting.sh)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(uv pip list:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
