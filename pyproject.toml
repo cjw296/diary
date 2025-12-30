@@ -5,6 +5,7 @@ members = ["python/*"]
 dev-dependencies = [
     "pytest>=8.3.3",
     "pytest-cov>=6.1.1",
+    "coverage>=7.13.1",
     "testfixtures>=10.0.0",
     "black>=24.10.0",
     "mypy>=1.16.0",
