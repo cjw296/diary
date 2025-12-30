@@ -75,6 +75,36 @@ The application parses a custom text-based diary format defined in `python/core/
 
 **CRITICAL: Before creating any commit, AI agents MUST run the following commands and fix all issues:**
 
+### Type Annotations
+
+**ALL functions and methods MUST have complete type annotations.**
+
+- Every function parameter must have a type annotation
+- Every function must have a return type annotation (use `-> None` for functions that don't return a value)
+- Property methods, `__str__`, `__post_init__`, and other special methods all require type annotations
+- Use `list[Any]` for Lark Transformer methods that receive children
+- mypy is configured with `disallow_untyped_defs = true` and checks all of `python/` (source + tests)
+
+**NOTE**: Test files have `disallow_untyped_defs` temporarily disabled while annotations are being added.
+New test functions and fixtures MUST include proper type annotations (`-> None` for test functions,
+`-> Iterator[Type]` for fixtures that yield).
+
+```python
+# CORRECT
+def process_data(input: str, count: int = 0) -> list[str]:
+    return input.split()
+
+def save_file(path: Path) -> None:
+    path.write_text("data")
+
+# WRONG - missing annotations
+def process_data(input, count=0):
+    return input.split()
+
+def save_file(path):
+    path.write_text("data")
+```
+
 ### Required Pre-commit Checks
 
 Run the comprehensive test and linting script:
@@ -114,26 +144,102 @@ cd python/core && uv run pytest
 - **Leverage fixture-based mocking**: Use pytest fixtures for external dependencies (e.g., `mocked_responses` for HTTP mocking)
 - **Avoid complex function mocking**: Prefer real error-generating content over monkey-patching. If mocking is unavoidable, provide detailed documentation explaining why
 
-### Assertions and Error Testing
-- **Use `testfixtures.compare()` for equality assertions**: Provides better diff output than bare `assert` statements
-  ```python
-  # Preferred
-  compare(result, expected={'key': 'value'})
-  compare(periods, expected=[Period(start=date(2023, 1, 15), ...)])
+### Test Fixtures
 
-  # Instead of
-  assert result == {'key': 'value'}
+**CRITICAL: A `replace` fixture is available in conftest.py for all tests. Always use it for mocking.**
+
+- **Use the `replace` fixture for all mocking with testfixtures**:
+  ```python
+  # CORRECT - Use replace fixture with in_module
+  def test_something(replace: Replacer) -> None:
+      replace.in_module(date, mock_date(), module=diary.store)
+      # ... test code ...
+
+  # WRONG - Never use dotted string paths
+  def test_something(replace: Replacer) -> None:
+      replace.replace('diary.store.date', mock_date())  # NEVER DO THIS!
+
+  # WRONG - Don't create Replacer() manually
+  def test_something() -> None:
+      with Replacer() as r:  # NEVER DO THIS - use the fixture!
+          r.replace(...)
   ```
+
+- **NEVER use dotted string paths with replace()**: Always use `replace.in_module(original, replacement, module=target_module)`
+  - Dotted strings like `'diary.store.date'` are fragile and error-prone
+  - Use `in_module()` for type safety and refactoring resilience
+  - See testfixtures documentation for details on `in_module()` usage
+
+### Test Docstrings
+
+**DO NOT put docstrings on test functions and methods!**
+
+Test function names should be self-documenting and descriptive enough that docstrings are unnecessary.
+
+```python
+# CORRECT - No docstring, descriptive name
+def test_get_returns_none_for_nonexistent_date() -> None:
+    store = MemoryStore()
+    result = store.get(date(2024, 1, 15))
+    compare(result, expected=None)
+
+# WRONG - Has docstring
+def test_get_nonexistent() -> None:
+    """Test getting a period that doesn't exist."""
+    store = MemoryStore()
+    ...
+```
+
+Rationale: Docstrings in tests add noise and often just restate what the test name already says. Keep tests clean and focused.
+
+### Assertions and Error Testing
+
+**CRITICAL: Never use `assert` statements in tests. Always use `testfixtures.compare()` or `testfixtures.ShouldRaise()`.**
+
+- **Use `testfixtures.compare()` for ALL equality assertions**: Provides better diff output than bare `assert` statements
+  ```python
+  # CORRECT - Complete object comparison, reusing variables, minimal parameters
+  stuff = Stuff(type=Type.event, title="Test")  # Don't pass body=None, tags=None
+  expected = Period(start=date(2024, 1, 15), stuff=[stuff], modified=date(2024, 12, 30))
+  compare(result, expected=expected)
+
+  # WRONG - Partial comparisons
+  assert result is not None
+  compare(result.start, expected=date(2024, 1, 15))
+  compare(len(result.stuff), expected=1)
+
+  # WRONG - Using assert
+  assert result == expected_value
+  assert some_condition
+
+  # WRONG - Repeating defaults in parameters
+  Stuff(type=Type.event, title="Test", body=None, tags=None)  # Verbose!
+  ```
+
+- **Always compare complete objects, not individual fields**: This catches unexpected changes in other fields
+  - **Never pass parameters where the value is the default** - keeps tests minimal
+  - Reuse object variables in both test setup and comparison for DRY tests
+  - Use `testfixtures.Replacer()` with `test_date(delta=0)` to control `date.today()` for deterministic comparisons
+  - Don't set timestamp fields on input objects - let the code under test set them
+  - Only set timestamp fields in expected comparison objects
+  - Never check individual attributes unless you have a specific reason
 
 - **Use `testfixtures.ShouldRaise()` for exception testing**: More descriptive than `pytest.raises`
   ```python
-  # Preferred
+  # CORRECT
   with ShouldRaise(ValueError("Specific error message")):
       function_that_should_fail()
 
-  # Instead of
+  # WRONG
   with pytest.raises(ValueError, match="Specific error message"):
       function_that_should_fail()
+
+  # WRONG
+  try:
+      function_that_should_fail()
+      assert False, "Should have raised"
+  except ValueError:
+      pass
   ```
 
 ### HTTP Testing
