@@ -1,9 +1,12 @@
+from collections.abc import Iterator
+from dataclasses import dataclass
 from datetime import date
 
 import pytest
 import responses
 from bs4 import BeautifulSoup
-from requests import HTTPError
+from requests import HTTPError, PreparedRequest
+from responses import RequestsMock
 from testfixtures import compare, ShouldRaise, replace_in_module
 
 import diary.parse as parse
@@ -13,68 +16,83 @@ from diary.zope import Client, LookBackFailed
 
 
 @pytest.fixture
-def client():
+def client() -> Client:
     return Client(url="https://example.com", username="testuser", password="testpass")
 
 
 @pytest.fixture
-def mocked_responses():
-    with responses.RequestsMock() as rsps:
-        yield rsps
+def mocked_responses() -> Iterator[RequestsMock]:
+    with RequestsMock() as mock:
+        yield mock
+
+
+@dataclass
+class Mocked:
+    responses: RequestsMock
+
+    @property
+    def request(self) -> PreparedRequest:
+        assert len(self.responses.calls) == 1
+        request = self.responses.calls[0].request
+        return request
+
+
+@pytest.fixture
+def mocked(mocked_responses: RequestsMock) -> Mocked:
+    return Mocked(mocked_responses)
 
 
 class TestClient:
-    def test_init(self, client):
+    def test_init(self, client: Client) -> None:
         compare(client.url, expected="https://example.com")
         compare(client.username, expected="testuser")
         compare(client.password, expected="testpass")
         compare(client.session.auth, expected=("testuser", "testpass"))
 
-    def test_request_relative_url(self, client, mocked_responses):
-        mocked_responses.add(responses.GET, "https://example.com/test", body="success", status=200)
+    def test_request_relative_url(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
         result = client.request("get", "/test")
         compare(result.text, expected="success")
-        compare(len(mocked_responses.calls), expected=1)
-        request = mocked_responses.calls[0].request
+        request = mocked.request
         compare(request.url, expected="https://example.com/test")
-        assert "Authorization" in request.headers  # Keep this as assert for membership test
+        compare(request.headers["Authorization"], expected="Basic dGVzdHVzZXI6dGVzdHBhc3M=")
 
-    def test_request_absolute_url(self, client, mocked_responses):
-        mocked_responses.add(responses.GET, "https://other.com/test", body="success", status=200)
+    def test_request_absolute_url(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
         result = client.request("get", "https://other.com/test", absolute=True)
-        assert result.text == "success"
-        assert len(mocked_responses.calls) == 1
-        request = mocked_responses.calls[0].request
-        assert request.url == "https://other.com/test"
+        compare(result.text, expected="success")
+        request = mocked.request
+        compare(request.url, expected="https://other.com/test")
 
-    def test_request_with_kwargs(self, client, mocked_responses):
-        mocked_responses.add(responses.POST, "https://example.com/test", body="success", status=200)
+    def test_request_with_kwargs(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
         result = client.request("post", "/test", json={"key": "value"})
-        assert result.text == "success"
-        assert len(mocked_responses.calls) == 1
+        compare(result.text, expected="success")
 
-    def test_request_raises_for_status(self, client, mocked_responses):
+    def test_request_raises_for_status(
+        self, client: Client, mocked_responses: RequestsMock
+    ) -> None:
         mocked_responses.add(responses.GET, "https://example.com/test", body="error", status=404)
 
         with ShouldRaise(HTTPError):
             client.request("get", "/test")
 
-    def test_get(self, client, mocked_responses):
+    def test_get(self, client: Client, mocked_responses: RequestsMock) -> None:
         mocked_responses.add(responses.GET, "https://example.com/test", body="success", status=200)
 
         result = client.get("/test")
-        assert result.text == "success"
+        compare(result.text, expected="success")
 
-    def test_get_absolute(self, client, mocked_responses):
+    def test_get_absolute(self, client: Client, mocked_responses: RequestsMock) -> None:
         mocked_responses.add(responses.GET, "https://other.com/test", body="success", status=200)
 
         result = client.get("https://other.com/test", absolute=True)
-        assert result.text == "success"
+        compare(result.text, expected="success")
 
-    def test_get_soup(self, client, mocked_responses):
+    def test_get_soup(self, client: Client, mocked_responses: RequestsMock) -> None:
         html_content = '<html><body><h1>Test</h1></body></html>'
         mocked_responses.add(
             responses.GET,
@@ -87,9 +105,9 @@ class TestClient:
         assert isinstance(soup, BeautifulSoup)
         h1_tag = soup.find('h1')
         assert h1_tag is not None
-        assert h1_tag.text == "Test"
+        compare(h1_tag.text, expected="Test")
 
-    def test_get_soup_absolute(self, client, mocked_responses):
+    def test_get_soup_absolute(self, client: Client, mocked_responses: RequestsMock) -> None:
         html_content = '<html><body><h1>Test</h1></body></html>'
         mocked_responses.add(
             responses.GET, "https://other.com/test", body=html_content.encode('latin-1'), status=200
@@ -99,18 +117,17 @@ class TestClient:
         assert isinstance(soup, BeautifulSoup)
         h1_tag = soup.find('h1')
         assert h1_tag is not None
-        assert h1_tag.text == "Test"
+        compare(h1_tag.text, expected="Test")
 
-    def test_post(self, client, mocked_responses):
-        mocked_responses.add(responses.POST, "https://example.com/test", body="success", status=200)
+    def test_post(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.POST, "https://example.com/test", body="success", status=200)
 
         result = client.post("/test", {"key": "value"})
-        assert result.text == "success"
-        assert len(mocked_responses.calls) == 1
-        request = mocked_responses.calls[0].request
-        assert "key=value" in request.body
+        compare(result.text, expected="success")
+        request = mocked.request
+        compare(request.body, expected="key=value")
 
-    def test_post_data_basic(self, client):
+    def test_post_data_basic(self, client: Client) -> None:
         period = Period(start=date(2023, 1, 15))
         period.stuff = [Stuff(Type.event, "Test event")]
 
@@ -127,7 +144,7 @@ class TestClient:
             },
         )
 
-    def test_post_data_unicode_error(self, client):
+    def test_post_data_unicode_error(self, client: Client) -> None:
         period = Period(start=date(2023, 1, 15))
         # Create a Stuff with content that can't be encoded in latin-1
         stuff = Stuff(Type.event, "Test with emoji 😀")
@@ -136,32 +153,42 @@ class TestClient:
         with ShouldRaise(Exception):  # The exact error message varies by emoji representation
             client._post_data(period)
 
-    def test_add(self, client, mocked_responses):
-        mocked_responses.add(responses.POST, "https://example.com", body="success", status=200)
+    def test_add(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.POST, "https://example.com", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15))
         period.stuff = [Stuff(Type.event, "Test event")]
 
         client.add(period)
 
-        assert len(mocked_responses.calls) == 1
-        request = mocked_responses.calls[0].request
-        assert "addPosting%3Amethod=+Add+" in request.body
+        request = mocked.request
+        compare(
+            request.body,
+            expected=(
+                "title=%282023-01-15%29+Sunday&author=-&summary=EVENT+Test+event&"
+                "encoding=Plain&addPosting%3Amethod=+Add+"
+            ),
+        )
 
-    def test_update(self, client, mocked_responses):
-        mocked_responses.add(responses.POST, "https://example.com/123", body="success", status=200)
+    def test_update(self, client: Client, mocked: Mocked) -> None:
+        mocked.responses.add(responses.POST, "https://example.com/123", body="success", status=200)
 
         period = Period(start=date(2023, 1, 15), zope_id="123")
         period.stuff = [Stuff(Type.event, "Updated event")]
 
         client.update(period)
 
-        assert len(mocked_responses.calls) == 1
-        request = mocked_responses.calls[0].request
-        assert request.url == "https://example.com/123"
-        assert "edit%3Amethod=Change" in request.body
+        request = mocked.request
+        compare(request.url, expected="https://example.com/123")
+        compare(
+            request.body,
+            expected=(
+                "title=%282023-01-15%29+Sunday&author=-&summary=EVENT+Updated+event&"
+                "encoding=Plain&addPosting%3Amethod=+Add+&edit%3Amethod=Change"
+            ),
+        )
 
-    def test_update_without_zope_id(self, client):
+    def test_update_without_zope_id(self, client: Client) -> None:
         period = Period(start=date(2023, 1, 15))
 
         with ShouldRaise(AssertionError):
@@ -169,138 +196,139 @@ class TestClient:
 
 
 class TestClientInferDate:
-    def test_infer_date_with_date_format(self):
+    def test_infer_date_with_date_format(self) -> None:
         result, end = Client.infer_date("(2023-01-15) Sunday")
-        assert result == date(2023, 1, 15)
-        assert end is None
+        compare(result, expected=date(2023, 1, 15))
+        compare(end, expected=None)
 
-    def test_infer_date_format_mismatch(self):
+    def test_infer_date_format_mismatch(self) -> None:
         with ShouldRaise(AssertionError("15 Jan 23 was a Sunday, got: (2023-01-15) Monday")):
             Client.infer_date("(2023-01-15) Monday")
 
-    def test_infer_date_day_name_only_with_previous(self):
+    def test_infer_date_day_name_only_with_previous(self) -> None:
         previous = date(2023, 1, 20)  # Friday
         result, end = Client.infer_date("Tuesday", previous)
-        assert result == date(2023, 1, 17)
-        assert end is None
+        compare(result, expected=date(2023, 1, 17))
+        compare(end, expected=None)
 
-    def test_infer_date_day_name_only_without_previous(self):
+    def test_infer_date_day_name_only_without_previous(self) -> None:
         with pytest.raises(ValueError, match="Bad format"):
             Client.infer_date("Tuesday")
 
-    def test_infer_date_day_name_not_found(self):
+    def test_infer_date_day_name_not_found(self) -> None:
         previous = date(2023, 1, 15)  # Sunday
         with pytest.raises(ValueError, match="Bad format"):
             Client.infer_date("NotADay", previous)
 
-    def test_infer_date_bad_format(self):
+    def test_infer_date_bad_format(self) -> None:
         with pytest.raises(ValueError, match="Bad format"):
             Client.infer_date("invalid date format")
 
-    def test_infer_date_single_day_with_previous(self):
+    def test_infer_date_single_day_with_previous(self) -> None:
         previous = date(2023, 1, 20)
         with ShouldRaise(LookBackFailed):
             Client.infer_date("15", previous)
 
-    def test_infer_date_single_day_without_previous(self):
+    def test_infer_date_single_day_without_previous(self) -> None:
         with pytest.raises(ValueError, match="Need previous date for"):
             Client.infer_date("15")
 
-    def test_infer_date_day_with_month(self):
+    def test_infer_date_day_with_month(self) -> None:
         previous = date(2023, 1, 20)  # Close enough for 5-day lookback
         result, end = Client.infer_date("16 Jan", previous)
-        assert result == date(2023, 1, 16)
-        assert end is None
+        compare(result, expected=date(2023, 1, 16))
+        compare(end, expected=None)
 
-    def test_infer_date_full_date(self):
+    def test_infer_date_full_date(self) -> None:
         previous = date(2023, 1, 20)  # Close enough for 5-day lookback
         result, end = Client.infer_date("16 Jan 2023", previous)
-        assert result == date(2023, 1, 16)
-        assert end is None
+        compare(result, expected=date(2023, 1, 16))
+        compare(end, expected=None)
 
-    def test_infer_date_range_with_end_day(self):
+    def test_infer_date_range_with_end_day(self) -> None:
         previous = date(2023, 1, 20)
         # These patterns cause TypeError in lookback due to None day_number
         with ShouldRaise(TypeError):
             Client.infer_date("15 - 17", previous)
 
-    def test_infer_date_range_with_to(self):
+    def test_infer_date_range_with_to(self) -> None:
         previous = date(2023, 1, 20)
         # These patterns cause TypeError in lookback due to None day_number
         with ShouldRaise(TypeError):
             Client.infer_date("15 to 17", previous)
 
-    def test_infer_date_range_full_dates(self):
+    def test_infer_date_range_full_dates(self) -> None:
         previous = date(2023, 1, 20)  # Use January so months match
         result, end = Client.infer_date("15 Jan 2023 - 17 Jan 2023", previous)
-        assert result == date(2023, 1, 15)
-        assert end == date(2023, 1, 17)
+        compare(result, expected=date(2023, 1, 15))
+        compare(end, expected=date(2023, 1, 17))
 
 
 class TestClientLookback:
-    def test_lookback_basic(self):
+    def test_lookback_basic(self) -> None:
         start = date(2023, 1, 20)
         result = Client.lookback(start, "15", "", "15", None, None, max_days=10)
-        assert result == date(2023, 1, 15)
+        compare(result, expected=date(2023, 1, 15))
 
-    def test_lookback_with_day_name(self):
+    def test_lookback_with_day_name(self) -> None:
         start = date(2023, 1, 20)  # Friday
         result = Client.lookback(start, "Tuesday 17", "Tuesday", "17", None, None, max_days=10)
-        assert result == date(2023, 1, 17)
+        compare(result, expected=date(2023, 1, 17))
 
-    def test_lookback_with_day_name_short(self):
+    def test_lookback_with_day_name_short(self) -> None:
         start = date(2023, 1, 20)  # Friday
         result = Client.lookback(start, "Tue 17", "Tue", "17", None, None, max_days=10)
-        assert result == date(2023, 1, 17)
+        compare(result, expected=date(2023, 1, 17))
 
-    def test_lookback_wrong_day_name(self):
+    def test_lookback_wrong_day_name(self) -> None:
         start = date(2023, 1, 20)  # Friday
         with pytest.raises(AssertionError, match="was a Tuesday, but entry had Wednesday"):
             Client.lookback(start, "Wednesday 17", "Wednesday", "17", None, None, max_days=10)
 
-    def test_lookback_with_month(self):
+    def test_lookback_with_month(self) -> None:
         start = date(2023, 1, 20)  # Start in January
         result = Client.lookback(start, "15 January", "", "15", "January", None, max_days=10)
-        assert result == date(2023, 1, 15)
+        compare(result, expected=date(2023, 1, 15))
 
-    def test_lookback_with_month_short(self):
+    def test_lookback_with_month_short(self) -> None:
         start = date(2023, 1, 20)  # Start in January
         result = Client.lookback(start, "15 Jan", "", "15", "Jan", None, max_days=10)
-        assert result == date(2023, 1, 15)
+        compare(result, expected=date(2023, 1, 15))
 
-    def test_lookback_with_month_alias(self):
+    def test_lookback_with_month_alias(self) -> None:
         start = date(2023, 9, 20)  # Start in September
         result = Client.lookback(start, "15 Sept", "", "15", "Sept", None, max_days=10)
-        assert result == date(2023, 9, 15)
+        compare(result, expected=date(2023, 9, 15))
 
-    def test_lookback_wrong_month(self):
+    def test_lookback_wrong_month(self) -> None:
         start = date(2023, 1, 20)  # Start in January
         with pytest.raises(AssertionError, match="was in January, but entry had February"):
             Client.lookback(start, "15 February", "", "15", "February", None, max_days=10)
 
-    def test_lookback_with_year(self):
+    def test_lookback_with_year(self) -> None:
         start = date(2023, 1, 20)  # Start in 2023
         result = Client.lookback(start, "15 2023", "", "15", None, "2023", max_days=10)
-        assert result == date(2023, 1, 15)
+        compare(result, expected=date(2023, 1, 15))
 
-    def test_lookback_wrong_year(self):
+    def test_lookback_wrong_year(self) -> None:
         start = date(2023, 1, 20)
         with pytest.raises(AssertionError, match="was in 2023, but entry had 2022"):
             Client.lookback(start, "15 2022", "", "15", None, "2022", max_days=10)
 
-    def test_lookback_max_days_exceeded(self):
+    def test_lookback_max_days_exceeded(self) -> None:
         start = date(2023, 1, 20)
         with pytest.raises(LookBackFailed) as exc_info:
             Client.lookback(start, "1", "", "1", None, None, max_days=5)
 
-        assert exc_info.value.text == "1"
-        # The lookback goes 0, 1, 2, 3, 4 days back, so max_days=5 means it tries dates 20, 19, 18, 17, 16
-        assert exc_info.value.possible == date(2023, 1, 16)
-        assert str(exc_info.value) == "Looked back to 2023-01-16, couldn't match 1"
+        compare(exc_info.value.text, expected="1")
+        # The lookback goes 0, 1, 2, 3, 4 days back, so max_days=5 means it tries dates
+        # 20, 19, 18, 17, 16
+        compare(exc_info.value.possible, expected=date(2023, 1, 16))
+        compare(str(exc_info.value), expected="Looked back to 2023-01-16, couldn't match 1")
 
 
 class TestClientList:
-    def test_list_basic(self, mocked_responses):
+    def test_list_basic(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -332,7 +360,7 @@ class TestClientList:
             ],
         )
 
-    def test_list_with_pagination(self, mocked_responses):
+    def test_list_with_pagination(self, mocked_responses: RequestsMock) -> None:
         html_content1 = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -365,11 +393,9 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 2
-        assert periods[0].zope_id == "123"
-        assert periods[1].zope_id == "456"
+        compare([p.zope_id for p in periods], expected=["123", "456"])
 
-    def test_list_stops_at_earliest(self, mocked_responses):
+    def test_list_stops_at_earliest(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -391,10 +417,9 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 1
-        assert periods[0].zope_id == "123"
+        compare([p.zope_id for p in periods], expected=["123"])
 
-    def test_list_with_error_handler(self, mocked_responses):
+    def test_list_with_error_handler(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -414,15 +439,14 @@ class TestClientList:
         client = Client("https://example.com", "user", "pass")
         earliest = date(2023, 1, 10)
 
-        def handle_error(e, url, dt):
+        def handle_error(e, url, dt):  # type: ignore[no-untyped-def]
             return True  # Skip errors
 
         periods = list(client.list(earliest, handle_error=handle_error))
 
-        assert len(periods) == 1
-        assert periods[0].zope_id == "456"
+        compare([p.zope_id for p in periods], expected=["456"])
 
-    def test_list_error_not_handled(self, mocked_responses):
+    def test_list_error_not_handled(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -441,7 +465,7 @@ class TestClientList:
         with pytest.raises(ValueError):
             list(client.list(earliest))
 
-    def test_list_no_next_link(self, mocked_responses):
+    def test_list_no_next_link(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -459,9 +483,9 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 1
+        compare([p.zope_id for p in periods], expected=["123"])
 
-    def test_list_empty_html(self, mocked_responses):
+    def test_list_empty_html(self, mocked_responses: RequestsMock) -> None:
         mocked_responses.add(
             responses.GET, "https://example.com", body="<html></html>".encode('latin-1'), status=200
         )
@@ -471,9 +495,9 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 0
+        compare([p.zope_id for p in periods], expected=[])
 
-    def test_list_next_link_no_href(self, mocked_responses):
+    def test_list_next_link_no_href(self, mocked_responses: RequestsMock) -> None:
         html_content = '''
         <html>
             <a name="2023-01-15T10:00:00Z">
@@ -492,60 +516,67 @@ class TestClientList:
 
         periods = list(client.list(earliest))
 
-        assert len(periods) == 1
+        compare([p.zope_id for p in periods], expected=["123"])
 
 
 class TestClientAddStuff:
-    def test_add_stuff_basic(self):
+    def test_add_stuff_basic(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test event"
         body = "Additional notes"
 
         result = Client.add_stuff(period, summary, body)
 
-        assert result.start == date(2023, 1, 15)
-        assert len(result.stuff) == 2
-        assert result.stuff[0].type == Type.event
-        assert result.stuff[0].title == "Test event"
-        assert result.stuff[1].type == Type.note
-        assert result.stuff[1].title == "from body"
+        compare(result.start, expected=date(2023, 1, 15))
+        compare(len(result.stuff), expected=2)
+        compare(result.stuff[0], expected=Stuff(Type.event, "Test event"))
+        compare(result.stuff[1].type, expected=Type.note)
+        compare(result.stuff[1].title, expected="from body")
         assert result.stuff[1].body is not None and "Additional notes" in result.stuff[1].body
 
-    def test_add_stuff_strip_whitespace(self):
+    def test_add_stuff_strip_whitespace(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "  EVENT Test event  "
         body = ""
 
         result = Client.add_stuff(period, summary, body)
 
-        assert result.stuff[0].title == "Test event"
+        compare(
+            result,
+            expected=Period(start=date(2023, 1, 15), stuff=[Stuff(Type.event, "Test event")]),
+        )
 
-    def test_add_stuff_event_pattern_at_end(self):
+    def test_add_stuff_event_pattern_at_end(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "DID Something\n\nwent to the store"
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
-        assert len(result.stuff) == 2
-        assert result.stuff[0].type == Type.did
-        assert result.stuff[1].type == Type.event
-        assert result.stuff[1].title == "went to the store"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15),
+                stuff=[Stuff(Type.did, "Something"), Stuff(Type.event, "went to the store")],
+            ),
+        )
 
-    def test_add_stuff_remove_trailing_whitespace(self):
+    def test_add_stuff_remove_trailing_whitespace(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test event   \nDID Something   "
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
-        # Check that trailing whitespace is removed
-        source_lines = str(result).split('\n')
-        for line in source_lines:
-            if line.strip():  # Skip empty lines
-                assert not line.endswith(' '), f"Line '{line}' has trailing whitespace"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15),
+                stuff=[Stuff(Type.event, "Test event"), Stuff(Type.did, "Something")],
+            ),
+        )
 
-    def test_add_stuff_fix_missing_caps(self):
+    def test_add_stuff_fix_missing_caps(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "DIdn't do something"
         body = ""
@@ -553,20 +584,26 @@ class TestClientAddStuff:
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
         # The regex first capitalizes "DIdn't" to "DIDN'T", then it becomes an EVENT with the title
-        assert result.stuff[0].type == Type.event
-        assert result.stuff[0].title == "DIDN'T do something"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15), stuff=[Stuff(Type.event, "DIDN'T do something")]
+            ),
+        )
 
-    def test_add_stuff_gave_up_on(self):
+    def test_add_stuff_gave_up_on(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "GAVE UP on the project"
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
-        assert result.stuff[0].type == Type.cancelled
-        assert result.stuff[0].title == "the project"
+        compare(
+            result,
+            expected=Period(start=date(2023, 1, 15), stuff=[Stuff(Type.cancelled, "the project")]),
+        )
 
-    def test_add_stuff_didnt_lowercase(self):
+    def test_add_stuff_didnt_lowercase(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "didn't finish task"
         body = ""
@@ -574,61 +611,82 @@ class TestClientAddStuff:
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
         # The lowercase "didn't" gets converted to "DIDN't " which then becomes an event
-        compare(result.stuff[0].type, expected=Type.event)
-        compare(result.stuff[0].title, expected="DIDN'T finish task")
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15), stuff=[Stuff(Type.event, "DIDN'T finish task")]
+            ),
+        )
 
-    def test_add_stuff_initial_text_becomes_event(self):
+    def test_add_stuff_initial_text_becomes_event(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "went to the store"
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
-        assert result.stuff[0].type == Type.event
-        assert result.stuff[0].title == "went to the store"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15), stuff=[Stuff(Type.event, "went to the store")]
+            ),
+        )
 
-    def test_add_stuff_final_text_in_brackets(self):
+    def test_add_stuff_final_text_in_brackets(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "DID Something\n(also did this)"
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2023, 1, 1))
 
-        assert len(result.stuff) == 2
-        assert result.stuff[0].type == Type.did
-        assert result.stuff[1].type == Type.event
-        assert result.stuff[1].title == "(also did this)"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15),
+                stuff=[Stuff(Type.did, "Something"), Stuff(Type.event, "(also did this)")],
+            ),
+        )
 
-    def test_add_stuff_old_format(self):
+    def test_add_stuff_old_format(self) -> None:
         period = Period(start=date(2002, 1, 15))
         summary = "line one\nline two"
         body = ""
 
         result = Client.add_stuff(period, summary, body, date(2002, 1, 1))
 
-        assert len(result.stuff) == 2
-        assert all(stuff.type == Type.event for stuff in result.stuff)
-        assert result.stuff[0].title == "line one"
-        assert result.stuff[1].title == "line two"
+        compare(
+            result,
+            expected=Period(
+                start=date(2002, 1, 15),
+                stuff=[Stuff(Type.event, "line one"), Stuff(Type.event, "line two")],
+            ),
+        )
 
-    def test_add_stuff_with_body_dash(self):
+    def test_add_stuff_with_body_dash(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test event"
         body = "-"
 
         result = Client.add_stuff(period, summary, body)
 
-        assert len(result.stuff) == 1  # Body with just "-" is ignored
+        compare(
+            result,
+            expected=Period(start=date(2023, 1, 15), stuff=[Stuff(Type.event, "Test event")]),
+        )
 
-    def test_add_stuff_invalid_type_becomes_event(self):
+    def test_add_stuff_invalid_type_becomes_event(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "INVALID_TYPE Something"
         body = ""
 
         # Invalid types just become events when they don't match known patterns
         result = Client.add_stuff(period, summary, body)
-        assert result.stuff[0].type == Type.event
-        assert result.stuff[0].title == "INVALID_TYPE Something"
+        compare(
+            result,
+            expected=Period(
+                start=date(2023, 1, 15), stuff=[Stuff(Type.event, "INVALID_TYPE Something")]
+            ),
+        )
 
 
 class TestAddStuffErrorHandling:
@@ -638,31 +696,31 @@ class TestAddStuffErrorHandling:
     # to trigger actual parse failures with real content. The preprocessing converts
     # any malformed input into valid EVENT entries before parsing.
 
-    def test_add_stuff_error_formatting(self):
+    def test_add_stuff_error_formatting(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test"
         body = ""
 
         # Create mock parse function that simulates parse error with line info
         class MockParseError(Exception):
-            def __init__(self, message):
+            def __init__(self, message: str) -> None:
                 super().__init__(message)
                 self.line = 2
                 self.column = 5
 
-        def mock_parse_with_line_info(source):
+        def mock_parse_with_line_info(source: str) -> list[Period]:
             raise MockParseError("Simulated parse error")
 
         with replace_in_module(parse.parse, mock_parse_with_line_info, module=zope):
             with ShouldRaise(ValueError):  # Should format error with line pointer
                 Client.add_stuff(period, summary, body)
 
-    def test_add_stuff_non_parse_exception(self):
+    def test_add_stuff_non_parse_exception(self) -> None:
         period = Period(start=date(2023, 1, 15))
         summary = "EVENT Test"
         body = ""
 
-        def mock_parse_with_line_info(source):
+        def mock_parse_with_line_info(source: str) -> list[Period]:
             raise TypeError("wut?")
 
         with replace_in_module(parse.parse, mock_parse_with_line_info, module=zope):
@@ -671,11 +729,11 @@ class TestAddStuffErrorHandling:
 
 
 class TestLookBackFailed:
-    def test_lookback_failed_str(self):
+    def test_lookback_failed_str(self) -> None:
         exc = LookBackFailed(date(2023, 1, 15), "test text")
-        assert str(exc) == "Looked back to 2023-01-15, couldn't match test text"
+        compare(str(exc), expected="Looked back to 2023-01-15, couldn't match test text")
 
-    def test_lookback_failed_attributes(self):
+    def test_lookback_failed_attributes(self) -> None:
         exc = LookBackFailed(date(2023, 1, 15), "test text")
-        assert exc.possible == date(2023, 1, 15)
-        assert exc.text == "test text"
+        compare(exc.possible, expected=date(2023, 1, 15))
+        compare(exc.text, expected="test text")
