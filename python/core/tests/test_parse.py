@@ -341,14 +341,14 @@ def test_body_dashy_table() -> None:
 
 
 class TestInferDates:
-    def test_standard(self):
+    def test_standard(self) -> None:
         compare(Client.infer_date('(2021-11-08) Monday'), expected=(date(2021, 11, 8), None))
 
-    def test_day_mismatch(self):
+    def test_day_mismatch(self) -> None:
         with ShouldRaise(AssertionError('08 Nov 21 was a Monday, got: (2021-11-08) Tuesday')):
             Client.infer_date('(2021-11-08) Tuesday')
 
-    def test_just_day_and_date(self):
+    def test_just_day_and_date(self) -> None:
         compare(
             Client.infer_date(
                 ' Sunday \t23rd\n',
@@ -357,25 +357,25 @@ class TestInferDates:
             expected=(date(2020, 2, 23), None),
         )
 
-    def test_day_date_and_month(self):
+    def test_day_date_and_month(self) -> None:
         compare(
             Client.infer_date('Saturday 5th May', previous=date(2018, 5, 6)),
             expected=(date(2018, 5, 5), None),
         )
 
-    def test_date_and_month(self):
+    def test_date_and_month(self) -> None:
         compare(
             Client.infer_date('5th July', previous=date(2008, 7, 6)),
             expected=(date(2008, 7, 5), None),
         )
 
-    def test_date_and_sept(self):
+    def test_date_and_sept(self) -> None:
         compare(
             Client.infer_date('30th Sept', previous=date(2005, 10, 1)),
             expected=(date(2005, 9, 30), None),
         )
 
-    def test_just_day_name(self):
+    def test_just_day_name(self) -> None:
         compare(
             Client.infer_date(
                 'Tuesday',
@@ -384,50 +384,50 @@ class TestInferDates:
             expected=(date(2007, 5, 29), None),
         )
 
-    def test_just_day_name_too_far_back(self):
+    def test_just_day_name_too_far_back(self) -> None:
         sunday = date(2021, 11, 7)
         with ShouldRaise(ValueError("Bad format: 'Sunday'")):
             Client.infer_date('Sunday', previous=sunday)
 
-    def test_day_date_and_bad_month(self):
+    def test_day_date_and_bad_month(self) -> None:
         with ShouldRaise(AssertionError("2018-05-05 was in May, but entry had June")):
             Client.infer_date('Saturday 5th June', previous=date(2018, 5, 6))
 
-    def test_not_within_look_back(self):
+    def test_not_within_look_back(self) -> None:
         with ShouldRaise(LookBackFailed(date(2020, 2, 20), "Sunday 18th")):
             Client.infer_date('Sunday 18th', previous=date(2020, 2, 24))
 
-    def test_day_not_match_date(self):
+    def test_day_not_match_date(self) -> None:
         with ShouldRaise(AssertionError("2020-02-22 was a Saturday, but entry had Sunday")):
             Client.infer_date('Sunday 22nd', previous=date(2020, 2, 24))
 
-    def test_day_bad_year(self):
+    def test_day_bad_year(self) -> None:
         with ShouldRaise(AssertionError("2011-01-02 was in 2011, but entry had 2010")):
             Client.infer_date('Sunday 2nd Jan 2010', previous=date(2011, 1, 3))
 
-    def test_bad_format(self):
+    def test_bad_format(self) -> None:
         with ShouldRaise(ValueError("Bad format: 'Sunday 234th'")):
             Client.infer_date('Sunday 234th')
 
-    def test_date_range_found(self):
+    def test_date_range_found(self) -> None:
         compare(
             expected=(date(2018, 6, 18), date(2018, 6, 22)),
             actual=Client.infer_date('Monday 18th - Friday 22nd', previous=date(2018, 6, 23)),
         )
 
-    def test_date_range_no_space(self):
+    def test_date_range_no_space(self) -> None:
         compare(
             expected=(date(2010, 1, 30), date(2010, 1, 31)),
             actual=Client.infer_date('Saturday 30th-Sunday 31st', previous=date(2010, 2, 1)),
         )
 
-    def test_date_range_short_day(self):
+    def test_date_range_short_day(self) -> None:
         compare(
             expected=(date(2015, 9, 6), date(2015, 9, 12)),
             actual=Client.infer_date('Sunday 6th - Sat 12th', previous=date(2015, 9, 13)),
         )
 
-    def test_date_range_to(self):
+    def test_date_range_to(self) -> None:
         compare(
             expected=(date(2013, 3, 26), date(2013, 4, 9)),
             actual=Client.infer_date(
@@ -435,7 +435,7 @@ class TestInferDates:
             ),
         )
 
-    def test_date_range_full(self):
+    def test_date_range_full(self) -> None:
         compare(
             expected=(date(2010, 12, 17), date(2011, 1, 2)),
             actual=Client.infer_date(
@@ -443,19 +443,19 @@ class TestInferDates:
             ),
         )
 
-    def test_date_range_excess_lookback(self):
+    def test_date_range_excess_lookback(self) -> None:
         text = 'Friday 1st - Wednesday 27th'
         with ShouldRaise(LookBackFailed(date(2018, 6, 3), text)):
             (Client.infer_date(text, previous=date(2018, 6, 28)),)
 
-    def test_date_range_very_explicit_range(self):
+    def test_date_range_very_explicit_range(self) -> None:
         text = 'Friday 24th Sep 2004- Thursday 21st October'
         compare(
             expected=(date(2004, 9, 24), date(2004, 10, 21)),
             actual=Client.infer_date(text, previous=date(2004, 10, 22)),
         )
 
-    def test_date_range_lookback_edge_case(self):
+    def test_date_range_lookback_edge_case(self) -> None:
         compare(
             expected=(date(2008, 6, 4), date(2008, 6, 8)),
             actual=Client.infer_date('4th June - 8th June', previous=date(2008, 6, 9)),
@@ -463,7 +463,7 @@ class TestInferDates:
 
 
 class TestAddStuff:
-    def test_simple(self):
+    def test_simple(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -478,7 +478,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_no_newlines_at_end(self):
+    def test_no_newlines_at_end(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -493,7 +493,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_no_whitespace_at_end(self):
+    def test_no_whitespace_at_end(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -508,7 +508,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_whitespace_between_lines(self):
+    def test_whitespace_between_lines(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -524,7 +524,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_whitespace_in_stuff(self):
+    def test_whitespace_in_stuff(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -539,7 +539,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_whitespace_in_body_syntax(self):
+    def test_whitespace_in_body_syntax(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -554,7 +554,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_leading_event(self):
+    def test_leading_event(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -571,7 +571,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_just_event(self):
+    def test_just_event(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -587,7 +587,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_fix_missed_last_cap(self):
+    def test_fix_missed_last_cap(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -607,7 +607,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_brackets_last_line_becomes_event(self):
+    def test_brackets_last_line_becomes_event(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -623,7 +623,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_last_line_event(self):
+    def test_last_line_event(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -639,7 +639,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_no_event_doubling(self):
+    def test_no_event_doubling(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -655,7 +655,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_initial_event_followed_by_colon(self):
+    def test_initial_event_followed_by_colon(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -670,7 +670,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_body_with_dashes(self):
+    def test_body_with_dashes(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -685,7 +685,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_note(self):
+    def test_note(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -701,7 +701,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_gave_up(self):
+    def test_gave_up(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -718,7 +718,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_initial_lowercase_didnt(self):
+    def test_initial_lowercase_didnt(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
@@ -734,7 +734,7 @@ class TestAddStuff:
             ),
         )
 
-    def test_old(self):
+    def test_old(self) -> None:
         compare(
             Client.add_stuff(
                 Period(start=date(2021, 11, 9)),
