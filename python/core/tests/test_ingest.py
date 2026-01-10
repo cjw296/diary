@@ -17,7 +17,7 @@ from diary.objects import Period, Stuff, Type
 
 
 class TestCheckVmTime:
-    def test_vm_time_in_sync(self):
+    def test_vm_time_in_sync(self) -> None:
         mock_client = Mock()
         response = Mock()
         response.text = '2023-01-15T10:30:00\n'
@@ -28,7 +28,7 @@ class TestCheckVmTime:
 
         mock_client.get.assert_called_once_with('/vm_now')
 
-    def test_vm_time_out_of_sync(self):
+    def test_vm_time_out_of_sync(self) -> None:
         mock_client = Mock()
         response = Mock()
         response.text = '2023-01-15T10:30:00\n'
@@ -45,14 +45,14 @@ class TestCheckVmTime:
 
 class TestIngest:
     @pytest.fixture
-    def mock_config(self):
+    def mock_config(self) -> Mock:
         config = Mock()
         config.zope = Mock()
         config.zope.list = Mock(return_value=[])
         config.dump = '~/test-dump'
         return config
 
-    def test_ingest_basic_flow(self, mock_config):
+    def test_ingest_basic_flow(self, mock_config: Mock) -> None:
         period1 = Period(date(2023, 1, 15))
         period1.stuff.append(Stuff(Type.did, 'First entry'))
         period2 = Period(date(2023, 1, 16))
@@ -76,7 +76,7 @@ class TestIngest:
                 mock_config.zope.add.assert_any_call(period1)
                 mock_config.zope.add.assert_any_call(period2)
 
-    def test_ingest_generates_future_dates(self, mock_config):
+    def test_ingest_generates_future_dates(self, mock_config: Mock) -> None:
         period = Period(date(2023, 1, 15))
         period.stuff.append(Stuff(Type.did, 'Entry'))
 
@@ -99,7 +99,7 @@ class TestIngest:
             compare('(2023-01-19) Thursday' in diary_content, expected=True)
             compare('(2023-01-20) Friday' in diary_content, expected=True)
 
-    def test_ingest_skips_empty_entries(self, mock_config):
+    def test_ingest_skips_empty_entries(self, mock_config: Mock) -> None:
         period1 = Period(date(2023, 1, 15))
         period2 = Period(date(2023, 1, 16))
         period2.stuff.append(Stuff(Type.did, 'Has content'))
@@ -119,7 +119,7 @@ class TestIngest:
 
                 compare(mock_config.zope.add.call_count, expected=1)
 
-    def test_ingest_updates_existing_entry(self, mock_config):
+    def test_ingest_updates_existing_entry(self, mock_config: Mock) -> None:
         period = Period(date(2023, 1, 15))
         period.stuff.append(Stuff(Type.did, 'Updated entry'))
 
@@ -144,7 +144,7 @@ class TestIngest:
                 updated_period = mock_config.zope.update.call_args[0][0]
                 compare(updated_period.zope_id, expected='existing-123')
 
-    def test_ingest_with_trim_true(self, mock_config):
+    def test_ingest_with_trim_true(self, mock_config: Mock) -> None:
         from datetime import timedelta
         from diary.dates import previous_sunday
 
@@ -167,7 +167,7 @@ class TestIngest:
 
             compare(mock_config.zope.add.call_count, expected=1)
 
-    def test_ingest_dumps_all_periods(self, mock_config):
+    def test_ingest_dumps_all_periods(self, mock_config: Mock) -> None:
         period1 = Period(date(2023, 1, 15))
         period1.stuff.append(Stuff(Type.did, 'Entry 1'))
         period2 = Period(date(2023, 1, 16))
@@ -191,7 +191,7 @@ class TestIngest:
             compare(calls[0][0][1], expected=period1)
             compare(calls[1][0][1], expected=period2)
 
-    def test_ingest_uses_target_date_when_provided(self, mock_config):
+    def test_ingest_uses_target_date_when_provided(self, mock_config: Mock) -> None:
         period = Period(date(2023, 1, 15))
         period.stuff.append(Stuff(Type.did, 'Entry'))
 

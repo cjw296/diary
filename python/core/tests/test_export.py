@@ -12,7 +12,7 @@ from diary.zope import LookBackFailed
 
 
 class TestHandleError:
-    def test_with_regular_exception(self):
+    def test_with_regular_exception(self) -> None:
         with OutputCapture() as output:
             result = handle_error(
                 ValueError('test error'), 'http://example.com/123', date(2023, 1, 15)
@@ -25,7 +25,7 @@ class TestHandleError:
         assert 'ValueError' in output_text
         assert 'test error' in output_text
 
-    def test_with_lookback_failed(self):
+    def test_with_lookback_failed(self) -> None:
         with OutputCapture() as output:
             result = handle_error(
                 LookBackFailed(date(2023, 2, 15), 'lookback failed'),
@@ -39,7 +39,7 @@ class TestHandleError:
         assert 'Mon 20 Feb 23' in output_text
         assert 'LookBackFailed' in output_text
 
-    def test_with_string_error(self):
+    def test_with_string_error(self) -> None:
         with OutputCapture() as output:
             result = handle_error(
                 'string error message', 'http://example.com/789', date(2023, 3, 10)
@@ -53,22 +53,22 @@ class TestHandleError:
 
 class TestExport:
     @pytest.fixture
-    def mock_config(self):
+    def mock_config(self) -> Mock:
         config = Mock()
         config.zope = Mock()
         config.zope.url = 'http://example.com'
         return config
 
     @pytest.fixture
-    def sample_period(self):
+    def sample_period(self) -> Period:
         period = Period(date(2023, 1, 15))
         period.zope_id = 'entry-123'
         period.modified = date(2023, 1, 16)
         period.start_url = 'http://start.url'
-        period.start_date = '2023-01-15'
+        period.start_date = date(2023, 1, 15)
         return period
 
-    def test_export_quiet_mode(self, mock_config, sample_period):
+    def test_export_quiet_mode(self, mock_config: Mock, sample_period: Period) -> None:
         mock_config.zope.list = Mock(return_value=[sample_period])
 
         mock_soup = BeautifulSoup(
@@ -87,7 +87,7 @@ class TestExport:
         mock_config.zope.get_soup.assert_called_once()
         mock_config.zope.add_stuff.assert_called_once()
 
-    def test_export_verbose_mode(self, mock_config, sample_period):
+    def test_export_verbose_mode(self, mock_config: Mock, sample_period: Period) -> None:
         mock_config.zope.list = Mock(return_value=[sample_period])
 
         mock_soup = BeautifulSoup(
@@ -108,7 +108,7 @@ class TestExport:
         assert 'pub:' in output_text
         assert 'http://example.com/entry-123/manage' in output_text
 
-    def test_export_with_dump_path(self, mock_config, sample_period):
+    def test_export_with_dump_path(self, mock_config: Mock, sample_period: Period) -> None:
         mock_config.zope.list = Mock(return_value=[sample_period])
 
         mock_soup = BeautifulSoup(
@@ -120,6 +120,7 @@ class TestExport:
         mock_config.zope.add_stuff = Mock(return_value=sample_period)
 
         with TempDirectory() as td:
+            assert td.path is not None
             with OutputCapture():
                 with patch('diary.export.dump') as mock_dump:
                     export(mock_config, dump_path=Path(td.path), dry_run=True, quiet=True)
@@ -129,7 +130,9 @@ class TestExport:
             compare(call_args[0][1], expected=sample_period)
             compare(call_args[0][2], expected=True)
 
-    def test_export_stops_on_gap_to_modified_too_large(self, mock_config, sample_period):
+    def test_export_stops_on_gap_to_modified_too_large(
+        self, mock_config: Mock, sample_period: Period
+    ) -> None:
         sample_period.modified = date(2022, 12, 1)
         mock_config.zope.list = Mock(return_value=[sample_period])
 
@@ -140,18 +143,18 @@ class TestExport:
         assert 'http://example.com/entry-123' in output_text
         assert 'gap too big!' in output_text
 
-    def test_export_stops_on_gap_to_previous_invalid(self, mock_config):
+    def test_export_stops_on_gap_to_previous_invalid(self, mock_config: Mock) -> None:
         period1 = Period(date(2023, 1, 10))
         period1.zope_id = 'entry-1'
         period1.modified = date(2023, 1, 11)
         period1.start_url = 'http://start.url'
-        period1.start_date = '2023-01-10'
+        period1.start_date = date(2023, 1, 10)
 
         period2 = Period(date(2023, 1, 15))
         period2.zope_id = 'entry-2'
         period2.modified = date(2023, 1, 16)
         period2.start_url = 'http://start.url'
-        period2.start_date = '2023-01-15'
+        period2.start_date = date(2023, 1, 15)
 
         mock_config.zope.list = Mock(return_value=[period2, period1])
 
@@ -170,7 +173,9 @@ class TestExport:
         assert 'http://example.com/entry-1' in output_text
         assert '5 days to previous!' in output_text
 
-    def test_export_with_start_url_and_start_date(self, mock_config, sample_period):
+    def test_export_with_start_url_and_start_date(
+        self, mock_config: Mock, sample_period: Period
+    ) -> None:
         mock_config.zope.list = Mock(return_value=[sample_period])
 
         mock_soup = BeautifulSoup(
@@ -189,7 +194,9 @@ class TestExport:
         compare(call_args[2], expected='http://start')
         compare(call_args[3], expected=date(2023, 1, 1))
 
-    def test_export_calls_add_stuff_with_unescaped_html(self, mock_config, sample_period):
+    def test_export_calls_add_stuff_with_unescaped_html(
+        self, mock_config: Mock, sample_period: Period
+    ) -> None:
         mock_config.zope.list = Mock(return_value=[sample_period])
 
         mock_soup = BeautifulSoup(

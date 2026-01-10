@@ -9,13 +9,13 @@ from diary_cli.cli import click_export, click_ingest, main
 
 
 class TestMain:
-    def test_main_group_help(self):
+    def test_main_group_help(self) -> None:
         runner = CliRunner()
         result = runner.invoke(main, ['--help'])
         compare(result.exit_code, expected=0)
         compare('Usage:' in result.output, expected=True)
 
-    def test_main_group_invokes_subcommand(self):
+    def test_main_group_invokes_subcommand(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -28,7 +28,7 @@ class TestMain:
 
 
 class TestExportCommand:
-    def test_export_with_start_date(self):
+    def test_export_with_start_date(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -42,7 +42,7 @@ class TestExportCommand:
             call_args = mock_export.call_args
             compare(call_args[0][2], expected=date(2023, 1, 15))
 
-    def test_export_with_all_options(self):
+    def test_export_with_all_options(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -75,7 +75,7 @@ class TestExportCommand:
 
 
 class TestIngestCommand:
-    def test_ingest_with_defaults(self):
+    def test_ingest_with_defaults(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -91,7 +91,7 @@ class TestIngestCommand:
             compare(call_args[0][1], expected=True)
             compare(call_args[0][2], expected=None)
 
-    def test_ingest_with_no_trim(self):
+    def test_ingest_with_no_trim(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -105,7 +105,7 @@ class TestIngestCommand:
             call_args = mock_ingest.call_args
             compare(call_args[0][1], expected=False)
 
-    def test_ingest_with_target(self):
+    def test_ingest_with_target(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
@@ -119,7 +119,7 @@ class TestIngestCommand:
             call_args = mock_ingest.call_args
             compare(call_args[0][2], expected=date(2023, 1, 20))
 
-    def test_ingest_with_all_options(self):
+    def test_ingest_with_all_options(self) -> None:
         runner = CliRunner()
         with Replacer() as r:
             mock_config = Mock()
